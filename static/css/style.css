@@ -377,8 +377,15 @@ table {
 th, td {
 	text-align: left;
 	padding: 12px 16px;
-	white-space: nowrap;
 }
+
+/* Headers stay on one line; body cells may wrap so a long value (e.g. a card
+   name) reflows instead of pushing the whole table past the page width. IDs
+   in <code> still stay intact - see below. overflow-x on .table-wrap remains
+   the fallback for very narrow screens. */
+th { white-space: nowrap; }
+td { white-space: normal; }
+td code { white-space: nowrap; }
 
 thead th {
 	color: var(--muted);
