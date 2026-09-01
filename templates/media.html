@@ -24,10 +24,10 @@
 				</tr>
 			</thead>
 			<tbody>
-				{% for card, total_size in rows %}
+				{% for card, total_size, device_label in rows %}
 				<tr>
 					<td><code>{{ card.card_id }}</code></td>
-					<td><code>{{ card.esp_id }}</code></td>
+					<td>{{ device_label }}</td>
 					<td>{{ card.name or "—" }}</td>
 					<td>{{ card.files | length }}</td>
 					<td>{{ (total_size / 1048576) | round(1) }}&nbsp;MB</td>

@@ -473,8 +473,13 @@ def manifest_preview(esp_id, card_id):
 @app.route("/media")
 def media_overview():
     cards_by_key = store.list_cards()
+    devices_by_id = store.list_devices()
     rows = [
-        (c, sum(f["size"] for f in c.get("files", [])))
+        (
+            c,
+            sum(f["size"] for f in c.get("files", [])),
+            devices_by_id.get(c["esp_id"], {}).get("alias") or c["esp_id"],
+        )
         for c in cards_by_key.values()
         if c["kind"] == "files" and c.get("files")
     ]
