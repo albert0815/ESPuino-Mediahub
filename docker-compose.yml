@@ -14,18 +14,18 @@ services:
     #   chmod -R o+rX /path/to/your/library
     # or override `user:` below to match the uid/gid that already owns it
     # (e.g. `id -u`:`id -g` of your own account) instead of 33:33.
-    user: "33:33"
+    user: "${MEDIAHUB_UID:-33}:${MEDIAHUB_GID:-33}"
     ports:
-      - "8080:8080"
+      - "${MEDIAHUB_PORT:-8080}:8080"
     volumes:
       # Devices/cards/assignments (db.json) — small, structured data
-      - ./data:/data
+      - "${MEDIAHUB_DATA:-./data}:/data"
       # Your own existing audio library, browsed and referenced in place —
       # MediaHub never writes here, just point this at wherever your music/
       # audiobook files already live. Read-only is enough (and enforced).
-      - ./media:/media:ro
+      - "${MEDIAHUB_MEDIA:-./media}:/media:ro"
     environment:
       - MEDIAHUB_DATA=/data
       - MEDIAHUB_MEDIA=/media
-      - TZ=Europe/Berlin
+      - TZ=${TZ:-Europe/Berlin}
     restart: unless-stopped

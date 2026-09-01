@@ -1,3 +1,11 @@
+# Local user configuration — copied from env-example, never commit.
+# Keeping this out of git is what lets users edit their settings and still
+# `git pull` updates without conflicts.
+.env
+
+# Optional local Docker Compose overrides (advanced users)
+docker-compose.override.yml
+
 /data/*
 !/data/.gitkeep
 /media/*

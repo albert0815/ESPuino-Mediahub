@@ -1,3 +1,8 @@
+# Some things for docker to ignore
+
+.env
+docker-compose.override.yml
+
 data/
 media/
 **/__pycache__/

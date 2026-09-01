@@ -9,25 +9,27 @@ assignments of multiple [ESPuinos](https://github.com/biologist79/ESPuino). Conc
 
 ## Quick start
 
-The container runs as `www-data` (uid/gid `33:33`) rather than root, so
+The container runs (per default) as `www-data` (uid/gid `33:33`) rather than root, so
 `./data` (the only thing it writes to) needs to be writable by that user
 first. Point `./media` at wherever your existing audio library already
-lives — it's mounted read-only and MediaHub never writes to it:
+lives — it's mounted read-only and MediaHub never writes to it. If you want
+to make any changes: don't edit docker-compose.yml directly - use .env instead.
 
 ```bash
+cp env-example .env
 mkdir -p data
 chown -R 33:33 data
-docker compose up --build
+docker compose up -d --build
 ```
 
-By default `docker-compose.yml` maps a local `./media` folder; edit that
-line to point at your actual library path instead, e.g. `/mnt/audiobooks:/media:ro`.
+By default MediaHub looks for a local `./media` folder; set `MEDIAHUB_MEDIA` in
+`.env` to point at your actual library instead, e.g. `MEDIAHUB_MEDIA=/mnt/audiobooks`.
 
 **Directory listing and file reading are separate Unix permissions** — a
 track can show up in the browser tree yet fail to save with "permission
 denied" if the file itself isn't readable by uid `33`. If that happens,
-either `chmod -R o+rX /path/to/your/library` or point `user:` in
-`docker-compose.yml` at the uid/gid that already owns your library instead.
+either `chmod -R o+rX /path/to/your/library` or set `MEDIAHUB_UID`/`MEDIAHUB_GID`
+in `.env` to the uid/gid that already owns your library (`id -u` / `id -g`).
 
 Then open [http://localhost:8080](http://localhost:8080).
 Hint: Adjust localhost and port according to your needs.
@@ -38,6 +40,17 @@ For local development without Docker:
 pip install -r requirements.txt
 python app.py        # http://localhost:8080
 ```
+
+## Updating
+
+```bash
+git pull
+docker compose up -d --build
+```
+
+`git pull` stays conflict-free because your settings live in `.env` (which git
+ignores), not in the tracked files. `--build` is required — without it Compose
+reuses the existing image and keeps running the previous version.
 
 ## Stack
 
