@@ -3,8 +3,13 @@
 A single JSON file (``db.json``) under ``DATA_DIR`` is plenty for the
 expected scale (a handful of devices, a few dozen cards) — a database
 server would be pure overhead here. Writes are serialized by a
-process-local lock and applied atomically (tmp file + rename), mirroring
-the download pattern used on the ESPuino itself (concept §13).
+process-local lock *and* an ``flock`` on a sibling file, then applied
+atomically (tmp file + rename), mirroring the download pattern used on the
+ESPuino itself (concept §13). The cross-process lock matters because the
+container runs several gunicorn workers and one of them additionally writes
+from the background podcast sync (see podcast_sync) — without it, a
+read-modify-write in one process could silently drop a change another
+process made in the meantime.
 
 Cards are keyed by (esp_id, card_id), not card_id alone — the same
 physical card can be enrolled on several ESPuinos (that's the point of
@@ -14,6 +19,7 @@ an assignment already knows exactly which one ESPuino to call, no more
 guessing from whichever device last happened to tap the card.
 """
 
+import fcntl
 import json
 import os
 import threading
@@ -22,12 +28,16 @@ from datetime import datetime, timezone
 _lock = threading.Lock()
 
 DEFAULT_RECURSION_DEPTH = 3
+DEFAULT_PODCAST_REFRESH_MINUTES = 360
 
 _DEFAULT_DB = {
     "settings": {
         "delete_mode": "lazy",  # "lazy" | "secure" — see concept §13.1
         "password_hash": None,  # None = hub web UI has no login requirement
         "recursion_depth": DEFAULT_RECURSION_DEPTH,  # subfolder levels "use folder" descends into for recursive play modes
+        # How often the hub re-checks an ARD Sounds card set to "latest
+        # episode" for a newer one (0 = only when asked to, §7.3).
+        "podcast_refresh_minutes": DEFAULT_PODCAST_REFRESH_MINUTES,
     },
     "devices": {},
     "cards": {},
@@ -46,6 +56,7 @@ class Store:
     def __init__(self, data_dir):
         self.data_dir = data_dir
         self.db_path = os.path.join(data_dir, "db.json")
+        self.lock_path = self.db_path + ".lock"
         os.makedirs(data_dir, exist_ok=True)
         if not os.path.exists(self.db_path):
             self._write(_DEFAULT_DB)
@@ -64,11 +75,20 @@ class Store:
         os.replace(tmp_path, self.db_path)
 
     def _mutate(self, fn):
-        """Read, let fn mutate the data in place, write back atomically."""
-        with _lock:
-            data = self._read()
-            result = fn(data)
-            self._write(data)
+        """Read, let fn mutate the data in place, write back atomically.
+
+        The whole read-modify-write runs under both locks, so it is atomic
+        against the other threads of this process *and* against the other
+        gunicorn workers.
+        """
+        with _lock, open(self.lock_path, "a+b") as handle:
+            fcntl.flock(handle, fcntl.LOCK_EX)
+            try:
+                data = self._read()
+                result = fn(data)
+                self._write(data)
+            finally:
+                fcntl.flock(handle, fcntl.LOCK_UN)
             return result
 
     def _migrate_legacy_cards(self):
@@ -210,6 +230,120 @@ class Store:
             card["stream_url"] = stream_url
             card["files"] = files
             card["updated_at"] = ts
+            # Switching a card away from "podcast" must not leave its ARD
+            # Sounds intent behind — the background worker would keep syncing
+            # a card whose content type says otherwise.
+            card.pop("podcast", None)
+            card.pop("podcast_sync", None)
+            return card
+
+        return self._mutate(mutate)
+
+    # -- cards: ARD Sounds (podcast) -------------------------------------
+    def save_podcast_assignment(self, esp_id, card_id, name, play_mode, podcast):
+        """Saves the *intent* of an ARD Sounds card (show + which episodes).
+
+        The concrete file list is not known here — resolving the selection and
+        downloading the episodes is the background worker's job (see
+        podcast_sync). Any previously synced files are deliberately kept so
+        the card stays playable until the new selection finished downloading.
+        """
+
+        def mutate(data):
+            ts = now_iso()
+            key = _card_key(esp_id, card_id)
+            card = data["cards"].setdefault(
+                key,
+                {
+                    "esp_id": esp_id,
+                    "card_id": card_id,
+                    "status": "pending",
+                    "force_epoch": 0,
+                    "first_seen": ts,
+                    "last_seen": ts,
+                },
+            )
+            card["status"] = "assigned"
+            card["name"] = name
+            card["kind"] = "podcast"
+            card["play_mode"] = play_mode
+            card["stream_url"] = None
+            card.setdefault("files", [])
+            card["podcast"] = podcast
+            card["podcast_sync"] = {
+                "state": "pending",
+                "message": "",
+                "done": 0,
+                "total": 0,
+                "last_checked": None,
+                "last_synced": (card.get("podcast_sync") or {}).get("last_synced"),
+                "episodes": (card.get("podcast_sync") or {}).get("episodes", []),
+            }
+            card["updated_at"] = ts
+            return card
+
+        return self._mutate(mutate)
+
+    def update_podcast_sync(self, esp_id, card_id, **fields):
+        """Merges bookkeeping fields (state, message, progress, timestamps)
+        into a podcast card's sync record. Deliberately does not touch
+        `updated_at`/`files`: progress reporting must not change the manifest
+        (and thus its `version`).
+
+        Ignores a card that is no longer an ARD Sounds one — the admin may
+        have switched its content type while the background worker was in the
+        middle of a download, and a late progress write must not resurrect
+        podcast state on a plain file card.
+        """
+
+        def mutate(data):
+            card = data["cards"].get(_card_key(esp_id, card_id))
+            if card is None or card.get("kind") != "podcast":
+                return None
+            sync = card.setdefault("podcast_sync", {})
+            sync.update(fields)
+            return card
+
+        return self._mutate(mutate)
+
+    def save_podcast_result(self, esp_id, card_id, files, episodes):
+        """Stores a finished sync: the manifest file list plus the episode
+        metadata behind it."""
+
+        def mutate(data):
+            card = data["cards"].get(_card_key(esp_id, card_id))
+            if card is None or card.get("kind") != "podcast":
+                return None
+            ts = now_iso()
+            changed = card.get("files") != files
+            card["files"] = files
+            if changed:
+                # Only a real content change is an assignment change; a
+                # re-check that confirmed the same episode is not.
+                card["updated_at"] = ts
+            card["podcast_sync"] = {
+                **card.get("podcast_sync", {}),
+                "state": "ready",
+                "message": "",
+                "done": len(files),
+                "total": len(files),
+                "last_checked": ts,
+                "last_synced": ts,
+                "episodes": episodes,
+            }
+            return card
+
+        return self._mutate(mutate)
+
+    def mark_podcast_pending(self, esp_id, card_id):
+        """"Check for new episodes now" — makes the card due for the worker."""
+
+        def mutate(data):
+            card = data["cards"].get(_card_key(esp_id, card_id))
+            if card is None or card.get("kind") != "podcast":
+                return None
+            sync = card.setdefault("podcast_sync", {})
+            sync.update({"state": "pending", "message": "", "done": 0, "total": 0})
             return card
 
         return self._mutate(mutate)
@@ -258,6 +392,13 @@ class Store:
         def mutate(data):
             data["settings"]["recursion_depth"] = depth
             return depth
+
+        return self._mutate(mutate)
+
+    def set_podcast_refresh_minutes(self, minutes):
+        def mutate(data):
+            data["settings"]["podcast_refresh_minutes"] = minutes
+            return minutes
 
         return self._mutate(mutate)
 
