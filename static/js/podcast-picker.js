@@ -80,6 +80,23 @@
 			return minutes + " min";
 		}
 
+		// "Die Maus · 950 episodes · latest episode: 21/09/2026" — the date is
+		// what tells you at a glance whether a show is still running or was
+		// last touched years ago, which the episode count alone does not.
+		function showMeta(show) {
+			var parts = [];
+			if (show.publisher) {
+				parts.push(show.publisher);
+			}
+			if (show.episode_count) {
+				parts.push(labels.episodeCount.replace("{num}", show.episode_count));
+			}
+			if (show.last_item_added) {
+				parts.push(labels.latestEpisode.replace("{date}", formatDate(show.last_item_added)));
+			}
+			return parts.join(" · ");
+		}
+
 		function setMessage(container, message, isError) {
 			container.hidden = false;
 			container.innerHTML = "";
@@ -132,10 +149,7 @@
 
 				var main = text("div", "podcast-result-main");
 				main.appendChild(text("strong", null, show.title));
-				var meta = [show.publisher, labels.episodeCount.replace("{num}", show.episode_count)]
-					.filter(Boolean)
-					.join(" · ");
-				main.appendChild(text("span", "podcast-meta", meta));
+				main.appendChild(text("span", "podcast-meta", showMeta(show)));
 				if (show.synopsis) {
 					main.appendChild(text("span", "podcast-synopsis", show.synopsis));
 				}
@@ -183,15 +197,9 @@
 			}
 			var main = text("div", "podcast-result-main");
 			main.appendChild(text("strong", null, show.title || state.show_title));
-			var meta = [];
-			if (show.publisher) {
-				meta.push(show.publisher);
-			}
-			if (show.episode_count) {
-				meta.push(labels.episodeCount.replace("{num}", show.episode_count));
-			}
-			if (meta.length) {
-				main.appendChild(text("span", "podcast-meta", meta.join(" · ")));
+			var meta = showMeta(show);
+			if (meta) {
+				main.appendChild(text("span", "podcast-meta", meta));
 			}
 			showEl.appendChild(main);
 
