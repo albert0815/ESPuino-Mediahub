@@ -1,6 +1,6 @@
 # MediaHub — Detailspezifikation
 
-*Stand: 21. September 2026 · Branch `feature-mediahub` · Status: Hub-Server (`mediahub/`) implementiert und getestet, inkl. ARD-Sounds-Inhaltstyp (§7.3); ESPuino-Firmware-Seite noch offen (§15)*
+*Stand: 21. September 2026 · Status: Hub-Server implementiert und getestet, inkl. ARD-Sounds-Inhaltstyp (§7.3). **Die ESPuino-Firmware-Seite ist umgesetzt und ausgeliefert** — `src/MediaHub.cpp`, playMode `MEDIAHUB` (18), seit Firmware 3.0 (07.09.2026); siehe §15/§17.*
 
 ## 1. Worum es geht
 
@@ -236,6 +236,14 @@ Fehler → Zustand "error" + Meldung im Karten-UI; Retry nach 10 Minuten
 - **`latest` wird periodisch nachgesehen**, Intervall konfigurierbar in den Einstellungen (Default 6 h, `0` = nie automatisch). Zusätzlich gibt es pro Karte einen Button „Folgen prüfen“. Eine neue Folge wird im Hintergrund geladen; abgespielt wird sie **beim nächsten Auflegen** — dieselbe Regel wie bei jeder anderen Inhaltsänderung. Eine feste Episodenauswahl wird nicht gepollt (sie kann sich nicht ändern).
 - Maximal **20 Folgen pro Karte** — jede Folge ist ein echter Download auf das Datenvolumen des Hubs, und ein Manifest mit 200 Dateien ist keine plausible Kartenzuweisung.
 
+**Wo es einen offiziellen Podcast-Feed gibt, wird der benutzt.** Viele ARD-Sendungen erscheinen zusätzlich als ganz normaler Podcast (`feeds.br.de`, `podcast.hr.de`, `deutschlandfunkkultur.de`, …). Liefert der Katalog für eine Sendung so einen Feed, löst der Hub „neueste Folge(n)“ über diesen Feed auf statt über die interne App-API — denn der Feed ist genau der Kanal, den ARD **zum Herunterladen** veröffentlicht, und ein Podcast-Client, der die Folge holt, ist dessen bestimmungsgemäße Nutzung.
+
+- Es ist dieselbe Folge: bei einer Stichprobe (BR) ist die `<guid>` des Feeds exakt die UUID, die auch in der Audio-URL der API steht. Unterschiedlich ist der **Auslieferungs-Endpunkt** — der Feed zeigt auf eine eigene Podcast-URL (`media.neuland.br.de/…/feed/…`) statt auf den App-CDN-Pfad.
+- Die **Feed-URL kommt immer serverseitig aus dem Katalog**, nie aus dem Browser — sonst wäre ein Formularfeld ein Hebel, den Hub beliebige URLs abrufen zu lassen.
+- **Fallback statt Fehler:** Gibt es keinen Feed (nur eine interne `crid://`-Kennung oder gar nichts), ist er unerreichbar oder unlesbar, läuft die Auflösung über die API weiter. Welche Quelle tatsächlich benutzt wurde, steht an der Karte und in der Kartenliste.
+- **Nur für „neueste“.** Eine feste Episodenauswahl nennt ARD-Episoden-IDs; ein Feed führt keine solche ID zum Abgleich und ohnehin nur ein gleitendes Fenster der letzten Folgen. Dafür bleibt es bei der API.
+- Die **Suche** läuft weiterhin über die API — daran führt kein Weg vorbei, der Feed kennt nur seine eigene Sendung.
+
 **Der Cache liegt unter `DATA_DIR/podcasts/<sendungsId>/<datum>_<episodenId>.<ext>`** — nicht unter `/media`, das ist read-only die Bibliothek des Admins (§5.4). Das ist die **einzige** Stelle, an der MediaHub selbst Mediendaten speichert.
 
 - Das führende Datum macht die Dateisortierung = chronologische Reihenfolge; die sortierten Ordner-Modi auf dem ESPuino spielen damit älteste Folge zuerst, ohne dass der Hub die Reihenfolge erzwingen muss.
@@ -244,8 +252,11 @@ Fehler → Zustand "error" + Meldung im Karten-UI; Retry nach 10 Minuten
 
 **Abspielmodi** sind eine kuratierte Teilmenge der Datei-Modi (Positions-merkende zuerst — Folgen sind lang); „Zufalls-Unterordner“ o.ä. wäre für eine Handvoll Folgen in einem Ordner nur Rauschen. Einzeltitel-Modi sind serverseitig auf genau eine Folge begrenzt, wie bei Dateien.
 
+**Der Hub gehört ins lokale Netz.** Die ESPuino-Endpunkte — Manifest, `/media/` und `/podcast-media/` — sind bewusst **unauthentifiziert** (§2: Geräte können sich nicht anmelden), und das optionale Passwort (§5.4) schützt ausschließlich die Verwaltungsoberfläche, nie diese Endpunkte. Im Haushalt ist das unproblematisch. Ein aus dem Internet erreichbarer Hub macht dagegen alles öffentlich zugänglich, was er ausliefert — bei ARD-Sounds-Karten also fremdes Rundfunkmaterial. Das ist von keiner Privatkopie-Schranke mehr gedeckt und der einzige Punkt in diesem Entwurf, an dem aus einer Grauzone eine klare Grenzüberschreitung wird. Das Zuweisungsformular weist darauf hin.
+
 **Bewusste Einschränkungen:**
 
+- **Nutzungsbedingungen.** ARD Sounds darf „ausschließlich zu privaten, nichtkommerziellen Zwecken“ genutzt werden; die Bedingungen verlangen für „Vervielfältigung … oder Speicherung“ zudem eine schriftliche Zustimmung. Genau das tut ein Hub, der Folgen zwischenspeichert — dem steht die Privatkopie-Schranke (§ 53 UrhG) gegenüber, die eine einseitige AGB-Klausel Privatnutzern nicht einfach nehmen kann. Die Feed-Bevorzugung oben und die Netz-Warnung darunter verkleinern den Fußabdruck, lösen die Frage aber nicht auf. Wer den Hub öffentlich betreibt oder kommerziell nutzt, ist eindeutig außerhalb.
 - **ARD hat keine offiziell dokumentierte, stabile API.** Der Hub spricht `api.ardaudiothek.de/graphql` — denselben Endpunkt, den die ARD-Sounds-Website selbst nutzt und an dem auch die Community-Tools hängen. Das kann jederzeit brechen; alles fällt daher „soft“ aus (lesbare Fehlermeldung an der Karte, Retry, nie eine Exception in einem Request). Anders als beim Scraping-Weg von espuino-podcast-server (Sendungsseite → Episoden-URN → Embed-Seite → numerische ID → GraphQL) reicht hier **eine** GraphQL-Abfrage pro Schritt — kein HTML-Parsing, keine Regexe auf fremdem Markup. Die Nutzungsbedingungen von ARD Sounds gelten; das ist ein privates, nicht-kommerzielles Komfort-Feature.
 - **Hörbuch-Modus + „immer die neueste“:** Die gemerkte Abspielposition liegt im NVS an der Karte (§8.1), nicht an der Folge — wechselt die Folge, wandert die alte Position mit. Das UI weist darauf hin; für „immer die neueste“ ist ein Einzeltitel-Modus meist die bessere Wahl.
 - **Nur ARD Sounds.** Das Feld `source` an der Karte ist auf Erweiterung angelegt (ein gewöhnlicher Podcast-RSS-Feed wäre der naheliegende nächste Fall), implementiert ist bewusst nur ARD Sounds.
@@ -423,9 +434,12 @@ Ein Code-Pfad für beide Auslöser: Der **Nutzer** löscht die Karte im ESPuino-
 
 - Der Vordergrund-Download ist blockierend. Wird währenddessen eine **weitere Karte** aufgelegt, wird das mit einem **Fehler quittiert** und ignoriert — der ESPuino ist „busy".
 
-## 15. Offene Punkte / später
+## 15. Umsetzungsstand
 
-- Keine offenen **Konzept**-Fragen mehr. Verbleibende Details (LED-Fehlermuster, Web-UI-Status-Texte, genaue „needs resync"-Retry-Politik) klären sich bei der Umsetzung.
+- **Hub-Server:** implementiert und getestet, inklusive ARD-Sounds-Inhaltstyp (§7.3).
+- **ESPuino-Firmware:** **umgesetzt und ausgeliefert.** `src/MediaHub.cpp` steht im ESPuino-Hauptzweig, playMode `MEDIAHUB` = 18 in `values.h`; enthalten in **Firmware 3.0 vom 07.09.2026** (Changelog-Eintrag vom 01.09.2026). Umgesetzt sind Manifest-Abruf, SHA-256-verifizierter Download auf die SD, Stale-/Re-Sync-Mechanik, Force Refresh, LED-Download-Animation und die SD-Voll-Behandlung — also der Plan aus §17.
+- **Mindestanforderung:** MediaHub-Karten brauchen auf dem Gerät **Firmware 3.0 oder neuer**. Ältere Stände kennen `mediahub://` überhaupt nicht und würden die Adresse als SD-Pfad zu öffnen versuchen.
+- Keine offenen **Konzept**-Fragen.
 
 ## 16. Entscheidungslog
 
@@ -465,7 +479,9 @@ Ein Code-Pfad für beide Auslöser: Der **Nutzer** löscht die Karte im ESPuino-
 
 ## 17. Implementierungsplan ESPuino-Seite (Phasen)
 
-Der Hub (`mediahub/`) ist implementiert und getestet (§15). Für die Firmware-Seite folgt die Umsetzung in Phasen, aufsteigend nach Abhängigkeiten sortiert — jede Phase soll für sich testbar/demofähig sein, bevor die nächste draufkommt.
+> **Hinweis:** Dieser Plan ist **abgearbeitet** — die Firmware-Seite ist seit 3.0 (07.09.2026) ausgeliefert (§15). Die Phasen bleiben als Dokumentation der Reihenfolge stehen, in der das entstanden ist, sind aber keine offene To-do-Liste mehr.
+
+Für die Firmware-Seite erfolgte die Umsetzung in Phasen, aufsteigend nach Abhängigkeiten sortiert — jede Phase sollte für sich testbar/demofähig sein, bevor die nächste draufkam.
 
 ### Phase 0 — Fundament & Dispatch-Weiche
 

@@ -271,6 +271,12 @@ def _podcast_status(card):
     state = podcast_sync.sync_state(card)
     kind = state["state"]
     if kind == podcast_sync.STATE_READY:
+        # Naming the source is not decoration: which channel an episode came
+        # through is exactly the distinction §7.3 turns on.
+        if state["source"] == podcast_sync.SOURCE_FEED:
+            return (kind, _("up to date · via podcast feed"))
+        if state["source"] == podcast_sync.SOURCE_API:
+            return (kind, _("up to date · via ARD Sounds API"))
         return (kind, _("up to date"))
     if kind == podcast_sync.STATE_SYNCING:
         if state["total"]:

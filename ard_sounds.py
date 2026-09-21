@@ -59,7 +59,7 @@ class ArdSoundsError(Exception):
     to be shown to the admin as-is."""
 
 
-class _TtlCache:
+class TtlCache:
     """Tiny in-process TTL cache. Deliberately not shared between gunicorn
     workers — a duplicate catalogue query costs nothing, and a cache server
     would be absurd overhead for a household hub (same reasoning as the
@@ -85,7 +85,7 @@ class _TtlCache:
             self._entries[key] = (time.monotonic() + ttl, value)
 
 
-_cache = _TtlCache()
+_cache = TtlCache()
 
 
 def _query(query, variables):
@@ -141,9 +141,27 @@ _SHOW_FIELDS = """
     numberOfElements
     lastItemAdded
     sharingUrl
+    feedUrl
+    feedUrl2
     publicationService { title }
     image { url url1X1 }
 """
+
+
+def _public_feed_url(node):
+    """The show's official podcast RSS feed, if it has a public one.
+
+    Many ARD shows are published as ordinary podcasts (feeds.br.de,
+    podcast.hr.de, …); for those, the feed is the channel ARD publishes *for
+    downloading*, which is what the hub should use (see concept §7.3). Others
+    carry only an internal `crid://…` identifier or nothing at all — those
+    can only be resolved through the API.
+    """
+    for key in ("feedUrl", "feedUrl2"):
+        value = (node.get(key) or "").strip()
+        if value.startswith("https://") or value.startswith("http://"):
+            return value
+    return None
 
 
 def _show_from_node(node):
@@ -158,6 +176,7 @@ def _show_from_node(node):
         "last_item_added": node.get("lastItemAdded"),
         "url": node.get("sharingUrl"),
         "image_url": _image_url(node.get("image")),
+        "feed_url": _public_feed_url(node),
     }
 
 

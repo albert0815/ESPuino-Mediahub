@@ -27,6 +27,7 @@ from datetime import datetime, timedelta, timezone
 
 import ard_sounds
 import podcast_cache
+import podcast_feed
 import store as store_lib
 
 # Episodes per card. "Latest N" plus a fixed selection both cap here: every
@@ -70,6 +71,7 @@ def sync_state(card):
     state.setdefault("last_checked", None)
     state.setdefault("last_synced", None)
     state.setdefault("episodes", [])
+    state.setdefault("source", None)
     return state
 
 
@@ -102,32 +104,72 @@ def is_due(card, refresh_minutes, now=None):
 # --------------------------------------------------------------------------
 # One card
 # --------------------------------------------------------------------------
+SOURCE_FEED = "rss"   # resolved via the show's official podcast RSS feed
+SOURCE_API = "api"    # resolved via ARD's internal catalogue API
+
+
+def _latest_from_feed(show_id, count):
+    """The newest episodes via the show's public podcast feed, or None.
+
+    Preferred over the API wherever a feed exists, because that feed is
+    ARD's own published download channel (concept §7.3). The feed URL is
+    looked up server-side from the catalogue on every sync — never taken
+    from the browser, which would turn a form field into a
+    fetch-any-URL lever.
+
+    Returns None (rather than raising) when there is no feed or it cannot be
+    used, so the caller falls back to the API instead of failing the card.
+    """
+    try:
+        show = ard_sounds.get_show(show_id)
+    except ard_sounds.ArdSoundsError:
+        return None
+    feed_url = (show or {}).get("feed_url")
+    if not feed_url:
+        return None
+    try:
+        return podcast_feed.fetch_episodes(feed_url, limit=count)
+    except podcast_feed.PodcastFeedError:
+        return None
+
+
 def _resolve_episodes(podcast):
-    """The episodes a card's intent currently points at, in playback order
-    (oldest first, matching the cache's date-sorted filenames)."""
+    """The episodes a card's intent currently points at.
+
+    Returns `(episodes, source)` with episodes in playback order (oldest
+    first, matching the cache's date-sorted filenames).
+    """
     show_id = podcast.get("show_id")
     if not show_id:
         raise ard_sounds.ArdSoundsError("This card has no ARD Sounds show configured.")
 
     if podcast.get("selection") == "latest":
         count = max(1, min(int(podcast.get("episode_count") or 1), MAX_EPISODES))
-        listing = ard_sounds.list_episodes(show_id, limit=count)
-        episodes = [ep for ep in listing["episodes"] if ep.get("audio_url")]
+
+        episodes = _latest_from_feed(show_id, count)
+        source = SOURCE_FEED
+        if episodes is None:
+            listing = ard_sounds.list_episodes(show_id, limit=count)
+            episodes = [ep for ep in listing["episodes"] if ep.get("audio_url")]
+            source = SOURCE_API
         if not episodes:
             raise ard_sounds.ArdSoundsError(
                 "ARD Sounds currently lists no playable episode for this show."
             )
-        # list_episodes is newest-first; playback order is chronological.
-        return list(reversed(episodes))
+        # Both sources are newest-first; playback order is chronological.
+        return (list(reversed(episodes)), source)
 
     wanted = (podcast.get("episodes") or [])[:MAX_EPISODES]
     if not wanted:
         raise ard_sounds.ArdSoundsError("No episode selected for this card.")
-    # Re-resolved every time rather than trusting the stored audio URL: ARD's
-    # CDN paths rotate, so a URL saved days ago may already be a 404.
+    # The API, always: a fixed selection names ARD episode ids, and a feed
+    # carries no such id to match them against (and only a rolling window of
+    # recent episodes anyway). Re-resolved every time rather than trusting
+    # the stored audio URL — ARD's CDN paths rotate, so a URL saved days ago
+    # may already be a 404.
     episodes = [ard_sounds.get_episode(entry["id"]) for entry in wanted]
     episodes.sort(key=lambda ep: (ep.get("publish_date") or "", ep["id"]))
-    return episodes
+    return (episodes, SOURCE_API)
 
 
 def sync_card(store, data_dir, esp_id, card_id):
@@ -155,7 +197,7 @@ def sync_card(store, data_dir, esp_id, card_id):
         )
 
     try:
-        episodes = _resolve_episodes(podcast)
+        episodes, source = _resolve_episodes(podcast)
     except ard_sounds.ArdSoundsError as exc:
         return fail(str(exc))
     except Exception as exc:  # noqa: BLE001
@@ -163,7 +205,7 @@ def sync_card(store, data_dir, esp_id, card_id):
         # anticipate: an error state is retried, a stuck one is not.
         return fail(f"Unexpected error while resolving episodes: {exc}")
 
-    store.update_podcast_sync(esp_id, card_id, total=len(episodes))
+    store.update_podcast_sync(esp_id, card_id, total=len(episodes), source=source)
 
     files, resolved = [], []
     for index, episode in enumerate(episodes):

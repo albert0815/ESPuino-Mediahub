@@ -877,3 +877,15 @@ input[type="file"]:focus,
 .podcast-sync-syncing, .podcast-sync-pending {
 	color: var(--brand);
 }
+
+/* --- "private use only" notice in the ARD Sounds section --- */
+.podcast-notice {
+	margin: 0;
+	padding: 10px 12px;
+	border: 1px solid color-mix(in srgb, #d97706 35%, var(--border));
+	border-left-width: 3px;
+	border-radius: 8px;
+	background: color-mix(in srgb, #d97706 8%, transparent);
+	font-size: .85rem;
+	color: var(--text);
+}

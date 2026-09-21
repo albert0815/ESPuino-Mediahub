@@ -93,6 +93,10 @@
 			<p class="muted">
 				{{ _('Podcasts and radio shows from ARD Sounds (formerly ARD Audiothek). MediaHub downloads the chosen episodes itself, so the ESPuino plays them from its SD card like any other assignment — offline included.') }}
 			</p>
+			<p class="podcast-notice">
+				<strong>{{ _('For private use only.') }}</strong>
+				{{ _('MediaHub caches the chosen episodes on the hub and serves them to your ESPuinos over endpoints that cannot require a login. Keep the hub on your local network: a hub reachable from the internet would make ARD content publicly available, which private use does not cover.') }}
+			</p>
 			<div id="podcast-results" class="podcast-results" hidden></div>
 		</div>
 

@@ -65,7 +65,7 @@ reuses the existing image and keeps running the previous version.
 
 - **Devices** (`/devices`): ESPuinos that have contacted the hub (IP, last seen, last card).
 - **Cards & Assignments** (`/cards`): overview, assign/edit — three content types per card: files/folders from the mounted library via an inline tree browser (`static/js/media-browser.js`, modeled after the ESPuino web UI's own SD explorer), a webradio stream URL, or an **ARD Sounds** show (see below) — force refresh (per card/all), delete.
-- **ARD Sounds podcasts** (concept §7.3): search the ARD Sounds catalogue right in the assignment form, then pick either *always the newest episode(s)* or specific episodes. The hub downloads the chosen episodes into its own cache (`<data>/podcasts/`) and hands the ESPuino an ordinary file manifest — **no firmware change**, and the card plays from the SD card offline like any other assignment. "Latest" cards are re-checked on a configurable interval (Settings) or on demand ("Check episodes"); a new episode is downloaded in the background and plays from the next tap onwards. Cached episodes are shared between cards and removed once nothing references them. Note that ARD offers no official public API — see the caveats in the concept.
+- **ARD Sounds podcasts** (concept §7.3): search the ARD Sounds catalogue right in the assignment form, then pick either *always the newest episode(s)* or specific episodes. Where a show has an official podcast RSS feed, "newest" is resolved through that feed — ARD's own published download channel — rather than through its internal app API. The hub downloads the chosen episodes into its own cache (`<data>/podcasts/`) and hands the ESPuino an ordinary file manifest — **no firmware change**, and the card plays from the SD card offline like any other assignment. "Latest" cards are re-checked on a configurable interval (Settings) or on demand ("Check episodes"); a new episode is downloaded in the background and plays from the next tap onwards. Cached episodes are shared between cards and removed once nothing references them. Note that ARD offers no official public API — see the caveats in the concept.
 - **New Cards**: filter at `/cards?pending=1` — cards registered on tap but not yet assigned (see concept §5.3).
 - **Media** (`/media`): storage usage per card; `/media/browse?path=` is the JSON API backing the tree browser.
 - **Settings** (`/settings`): delete behavior lazy vs. secure (concept §13.1) — secure calls `DELETE /rfid` on the ESPuino and only removes the hub entry after a confirmed 200 response. Also: subfolder recursion depth, how often ARD Sounds cards are checked for new episodes, and set/remove the optional hub password.
@@ -92,6 +92,18 @@ browser for assignment (no uploads — files stay in place under `./media`),
 ARD Sounds podcast cards (search, newest-episode subscriptions, background
 download and cache cleanup), `pending` registration, lazy/secure delete, and an
 optional web UI password.
-Open (see `../mediahub-konzept.md` §15): the ESPuino-side implementation
-(`MEDIAHUB` play mode, `MediaHub_EnsureCard`, LED download animation) is a
-separate firmware topic not yet started.
+
+The ESPuino side has shipped: `MEDIAHUB` (play mode 18) and
+`src/MediaHub.cpp` — manifest fetch, SHA-256-verified download to SD,
+stale/re-sync, LED download animation — are part of ESPuino firmware **3.0
+(07.09.2026)**. MediaHub cards therefore need **firmware 3.0 or newer** on
+the device; everything below that has no `mediahub://` support at all.
+
+**Keep the hub on your local network.** The ESPuino-facing endpoints
+(`manifest.json`, `/media/`, `/podcast-media/`) are deliberately
+unauthenticated — devices can't log in (concept §2). That is fine inside a
+household, but a hub reachable from the internet publishes whatever it
+serves. For ARD Sounds cards that matters beyond privacy: ARD content is
+licensed for private, non-commercial use, and making cached episodes
+publicly reachable is not covered by private-copy rules. The optional web UI
+password protects the admin interface only, never these endpoints.
