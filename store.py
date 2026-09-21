@@ -63,9 +63,29 @@ class Store:
         self.db_path = os.path.join(data_dir, "db.json")
         self.lock_path = self.db_path + ".lock"
         os.makedirs(data_dir, exist_ok=True)
-        if not os.path.exists(self.db_path):
-            self._write(_DEFAULT_DB)
-        else:
+        self._ensure_db()
+
+    def _ensure_db(self):
+        """Creates db.json on first start, or migrates an existing one.
+
+        Under the same cross-process lock as every other write: the container
+        boots several gunicorn workers at once and each one constructs a
+        Store, so on a fresh data volume they would otherwise all take the
+        "file is missing" branch, write the temp file and rename it — the
+        first one to finish leaves the others renaming a file that is no
+        longer there, and those workers die on boot with ENOENT.
+        """
+        created = False
+        with _lock, open(self.lock_path, "a+b") as handle:
+            fcntl.flock(handle, fcntl.LOCK_EX)
+            try:
+                if not os.path.exists(self.db_path):
+                    self._write(_DEFAULT_DB)
+                    created = True
+            finally:
+                fcntl.flock(handle, fcntl.LOCK_UN)
+        if not created:
+            # Takes the lock itself, so it must run once this one is released.
             self._migrate_legacy_cards()
 
     # -- low-level ---------------------------------------------------
@@ -74,7 +94,9 @@ class Store:
             return json.load(f)
 
     def _write(self, data):
-        tmp_path = self.db_path + ".tmp"
+        # Process-unique temp name, so two writers can never rename each
+        # other's file out from under themselves (see _ensure_db).
+        tmp_path = f"{self.db_path}.{os.getpid()}.tmp"
         with open(tmp_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, sort_keys=True, ensure_ascii=False)
         os.replace(tmp_path, self.db_path)
