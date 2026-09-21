@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ESPuino MediaHub\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-21 07:35+0000\n"
+"POT-Creation-Date: 2026-09-21 08:01+0000\n"
 "PO-Revision-Date: 2026-07-15 09:43+0200\n"
 "Last-Translator: ESPuino MediaHub\n"
 "Language: de\n"
@@ -88,7 +88,7 @@ msgid_plural "%(num)s files"
 msgstr[0] "%(num)s Datei"
 msgstr[1] "%(num)s Dateien"
 
-#: app.py:259 templates/card_form.html:33 templates/media.html:37
+#: app.py:259 templates/card_form.html:33 templates/media.html:80
 msgid "ARD Sounds"
 msgstr "ARD Sounds"
 
@@ -120,66 +120,84 @@ msgstr "lädt %(done)s/%(total)s"
 msgid "checking ARD Sounds…"
 msgstr "frage ARD Sounds ab …"
 
-#: app.py:293
+#: app.py:300
+#, python-format
+msgid ""
+"Cache limit of %(limit)s MB reached — no new episodes are downloaded. "
+"Raise it in Settings or keep fewer episodes."
+msgstr ""
+"Cache-Limit von %(limit)s MB erreicht — es werden keine neuen Folgen "
+"geladen. Limit in den Einstellungen erhöhen oder weniger Folgen "
+"vorhalten."
+
+#: app.py:309
+msgid ""
+"Not enough free disk space on the hub — MediaHub stopped before filling "
+"it up."
+msgstr ""
+"Zu wenig freier Speicher im Hub — MediaHub hat aufgehört, bevor er voll "
+"war."
+
+#: app.py:313
 msgid "sync failed"
 msgstr "Abgleich fehlgeschlagen"
 
-#: app.py:294
+#: app.py:314
 msgid "waiting for download"
 msgstr "wartet auf den Download"
 
-#: app.py:351
+#: app.py:375
 msgid "Card ID must be exactly 12 digits."
 msgstr "Die Karten-ID muss genau 12 Ziffern haben."
 
-#: app.py:355
+#: app.py:379
 msgid "Please choose a known ESPuino."
 msgstr "Bitte einen bekannten ESPuino wählen."
 
-#: app.py:364 app.py:384
+#: app.py:388 app.py:408
 #, python-format
 msgid "Card %(id)s is already assigned on this ESPuino — opening it for editing."
 msgstr ""
 "Karte %(id)s ist auf diesem ESPuino bereits zugewiesen — wird zum "
 "Bearbeiten geöffnet."
 
-#: app.py:378
+#: app.py:402
 msgid "Please choose a different, known ESPuino."
 msgstr "Bitte einen anderen, bekannten ESPuino wählen."
 
-#: app.py:407
+#: app.py:431
 #, python-format
 msgid "Card %(id)s duplicated to %(esp_id)s."
 msgstr "Karte %(id)s dupliziert auf %(esp_id)s."
 
-#: app.py:426
+#: app.py:450
 msgid "Please pick a show from ARD Sounds first."
 msgstr "Bitte zuerst eine Sendung bei ARD Sounds auswählen."
 
-#: app.py:448
+#: app.py:472
 msgid "Please select at least one episode."
 msgstr "Bitte mindestens eine Folge auswählen."
 
-#: app.py:461 app.py:535
+#: app.py:485 app.py:559
 msgid "Please choose a valid play mode."
 msgstr "Bitte einen gültigen Abspielmodus wählen."
 
-#: app.py:467
+#: app.py:491
 msgid "This play mode only supports a single episode — please select just one."
 msgstr ""
 "Dieser Abspielmodus unterstützt nur eine einzelne Folge — bitte nur eine "
 "auswählen."
 
-#: app.py:509
+#: app.py:533
 msgid "A stream URL is required for webradio."
 msgstr "Für Webradio wird eine Stream-URL benötigt."
 
-#: app.py:525
+#: app.py:549
 #, python-format
 msgid "Card %(id)s assigned — downloading the episodes now."
 msgstr "Karte %(id)s zugewiesen — die Folgen werden jetzt geladen."
 
-#: app.py:554
+#: app.py:578
 #, python-format
 msgid ""
 "Some selected files could not be used (missing, or not readable by the "
@@ -188,37 +206,37 @@ msgstr ""
 "Einige ausgewählte Dateien konnten nicht verwendet werden (fehlen oder "
 "vom Container-Nutzer nicht lesbar) und wurden übersprungen: %(paths)s"
 
-#: app.py:563
+#: app.py:587
 msgid "At least one audio file is required."
 msgstr "Mindestens eine Audiodatei wird benötigt."
 
-#: app.py:567
+#: app.py:591
 msgid "This play mode only supports a single file — please select just one."
 msgstr ""
 "Dieser Abspielmodus unterstützt nur eine einzelne Datei — bitte nur eine "
 "auswählen."
 
-#: app.py:573
+#: app.py:597
 #, python-format
 msgid "Card %(id)s assigned."
 msgstr "Karte %(id)s zugewiesen."
 
-#: app.py:653
+#: app.py:677
 #, python-format
 msgid "Checking ARD Sounds for new episodes of card %(id)s."
 msgstr "ARD Sounds wird auf neue Folgen für Karte %(id)s geprüft."
 
-#: app.py:669
+#: app.py:693
 #, python-format
 msgid "Force refresh triggered for card %(id)s."
 msgstr "Force Refresh für Karte %(id)s ausgelöst."
 
-#: app.py:676
+#: app.py:700
 #, python-format
 msgid "Force refresh triggered for all %(num)s cards."
 msgstr "Force Refresh für alle %(num)s Karten ausgelöst."
 
-#: app.py:695
+#: app.py:719
 #, python-format
 msgid ""
 "Secure delete: ESPuino (%(esp_id)s) did not confirm the deletion. Card "
@@ -227,36 +245,40 @@ msgstr ""
 "Secure Delete: Der ESPuino (%(esp_id)s) hat das Löschen nicht bestätigt. "
 "Die Karte wurde beibehalten, bitte erneut versuchen."
 
-#: app.py:711
+#: app.py:735
 #, python-format
 msgid "Card %(id)s deleted (%(mode)s)."
 msgstr "Karte %(id)s gelöscht (%(mode)s)."
 
-#: app.py:802
+#: app.py:860
 msgid "Recursion depth must be between 0 and 20."
 msgstr "Die Rekursionstiefe muss zwischen 0 und 20 liegen."
 
-#: app.py:813
+#: app.py:871
 msgid "The episode check interval must be between 0 and 10080 minutes (one week)."
 msgstr "Das Prüfintervall muss zwischen 0 und 10080 Minuten (einer Woche) liegen."
 
-#: app.py:818
+#: app.py:883
+msgid "The cache limit must be between 0 and 1048576 MB."
+msgstr "Das Cache-Limit muss zwischen 0 und 1048576 MB liegen."
+
+#: app.py:886
 msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 
-#: app.py:828
+#: app.py:898
 msgid "Please enter a password."
 msgstr "Bitte ein Passwort eingeben."
 
-#: app.py:830
+#: app.py:900
 msgid "Passwords do not match."
 msgstr "Die Passwörter stimmen nicht überein."
 
-#: app.py:833
+#: app.py:903
 msgid "Hub password set."
 msgstr "Hub-Passwort gesetzt."
 
-#: app.py:841
+#: app.py:911
 msgid "Hub password removed."
 msgstr "Hub-Passwort entfernt."
 
@@ -365,7 +387,7 @@ msgstr ""
 msgid "For ESPuino: %(device)s"
 msgstr "Für ESPuino: %(device)s"
 
-#: templates/card_form.html:16 templates/cards.html:76 templates/media.html:24
+#: templates/card_form.html:16 templates/cards.html:76 templates/media.html:67
 msgid "Name"
 msgstr "Name"
 
@@ -572,11 +594,11 @@ msgid "newest"
 msgstr "neueste"
 
 #: templates/card_form.html:170 templates/devices.html:35
-#: templates/settings.html:47
+#: templates/settings.html:57
 msgid "Save"
 msgstr "Speichern"
 
-#: templates/card_form.html:171 templates/cards.html:156
+#: templates/card_form.html:171 templates/cards.html:161
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -671,11 +693,11 @@ msgstr ""
 "Noch keine Karte bekannt — sie erscheint hier, sobald sie einmal an einem"
 " ESPuino aufgelegt wurde."
 
-#: templates/cards.html:74 templates/media.html:22
+#: templates/cards.html:74 templates/media.html:65
 msgid "Card ID"
 msgstr "Karten-ID"
 
-#: templates/cards.html:75 templates/media.html:23
+#: templates/cards.html:75 templates/media.html:66
 msgid "Device"
 msgstr "Gerät"
 
@@ -740,7 +762,7 @@ msgstr "Konfiguration von Karte %(id)s kopieren nach:"
 msgid "No other known ESPuino to duplicate to yet."
 msgstr "Noch kein weiterer bekannter ESPuino zum Duplizieren vorhanden."
 
-#: templates/cards.html:128 templates/cards.html:155
+#: templates/cards.html:128 templates/cards.html:160
 msgid "Duplicate"
 msgstr "Duplizieren"
 
@@ -749,15 +771,26 @@ msgstr "Duplizieren"
 msgid "Really delete card %(id)s?"
 msgstr "Karte %(id)s wirklich löschen?"
 
-#: templates/cards.html:131 templates/devices.html:45
+#: templates/cards.html:132
+msgid ""
+"The downloaded episodes are removed from the hub. The copy already on the"
+" ESPuino stays there until the card is deleted on the device too — switch"
+" to \"secure delete\" in Settings to have MediaHub do that for you."
+msgstr ""
+"Die heruntergeladenen Folgen werden im Hub entfernt. Die Kopie auf dem "
+"ESPuino bleibt dort liegen, bis die Karte auch auf dem Gerät gelöscht "
+"wird — stelle in den Einstellungen auf „Sicheres Löschen“ um, damit "
+"MediaHub das für dich übernimmt."
+
+#: templates/cards.html:136 templates/devices.html:45
 msgid "Delete"
 msgstr "Löschen"
 
-#: templates/cards.html:148
+#: templates/cards.html:153
 msgid "Duplicate to another ESPuino"
 msgstr "Auf einen anderen ESPuino duplizieren"
 
-#: templates/cards.html:151
+#: templates/cards.html:156
 msgid "Target ESPuino"
 msgstr "Ziel-ESPuino"
 
@@ -865,42 +898,98 @@ msgstr ""
 "Speicherbelegung pro Karte — so viel muss der ESPuino herunterladen und "
 "auf seiner SD-Karte halten."
 
-#: templates/media.html:10
-#, python-format
-msgid "Podcast cache on the hub: %(size)s MB."
-msgstr "Podcast-Cache im Hub: %(size)s MB."
-
-#: templates/media.html:11
-msgid ""
-"Only ARD Sounds episodes are stored by MediaHub itself (under the data "
-"volume); library files always stay in place and are never copied. "
-"Episodes no card references any more are removed automatically."
-msgstr ""
-"Nur ARD-Sounds-Folgen speichert MediaHub selbst (im Daten-Volume); "
-"Bibliotheksdateien bleiben immer an ihrem Platz und werden nie kopiert. "
-"Folgen, die keine Karte mehr referenziert, werden automatisch entfernt."
+#: templates/media.html:13
+msgid "Podcast cache"
+msgstr "Podcast-Cache"
 
 #: templates/media.html:16
+#, python-format
+msgid "of %(limit)s MB"
+msgstr "von %(limit)s MB"
+
+#: templates/media.html:22
+#, python-format
+msgid "%(percent)s%% of the cache limit used"
+msgstr "%(percent)s%% des Cache-Limits belegt"
+
+#: templates/media.html:28
+#, python-format
+msgid ""
+"This is the only media MediaHub stores itself: the ARD Sounds episodes it"
+" downloaded for your cards (%(num)s in total). Files from your library "
+"always stay where they are and are never copied."
+msgstr ""
+"Das sind die einzigen Mediendaten, die MediaHub selbst speichert: die für"
+" deine Karten heruntergeladenen ARD-Sounds-Folgen (insgesamt %(num)s). "
+"Dateien aus deiner Bibliothek bleiben immer an ihrem Platz und werden nie"
+" kopiert."
+
+#: templates/media.html:32
+msgid "You never have to clean this up."
+msgstr "Du musst hier nie selbst aufräumen."
+
+#: templates/media.html:33
+msgid ""
+"MediaHub removes an episode as soon as no card needs it any more — when a"
+" card moves on to a newer episode, when its selection changes, and when a"
+" card or device is deleted. It also checks once an hour on its own."
+msgstr ""
+"MediaHub entfernt eine Folge, sobald keine Karte sie mehr braucht — wenn "
+"eine Karte auf eine neuere Folge weiterzieht, wenn sich ihre Auswahl "
+"ändert und wenn eine Karte oder ein Gerät gelöscht wird. Zusätzlich sieht"
+" er stündlich von selbst nach."
+
+#: templates/media.html:35
+#, python-format
+msgid "Last removal: %(when)s (%(files)s episodes, %(size)s MB freed)."
+msgstr "Zuletzt entfernt: %(when)s (%(files)s Folgen, %(size)s MB freigegeben)."
+
+#: templates/media.html:40
+#, python-format
+msgid "Last checked: %(when)s — nothing to remove."
+msgstr "Zuletzt geprüft: %(when)s — nichts zu entfernen."
+
+#: templates/media.html:46
+msgid ""
+"The cache is close to its limit. New episodes are no longer downloaded "
+"once it is reached — raise the limit in Settings, or let your cards keep "
+"fewer episodes. Nothing already downloaded is deleted for this."
+msgstr ""
+"Der Cache ist nahe am Limit. Ist es erreicht, werden keine neuen Folgen "
+"mehr geladen — erhöhe das Limit in den Einstellungen oder lass deine "
+"Karten weniger Folgen vorhalten. Bereits Geladenes wird dafür nicht "
+"gelöscht."
+
+#: templates/media.html:51
+#, python-format
+msgid ""
+"Free space on the data volume: %(size)s MB. MediaHub always keeps 512 MB "
+"free and stops downloading before it runs out."
+msgstr ""
+"Freier Platz auf dem Daten-Volume: %(size)s MB. MediaHub hält immer 512 "
+"MB frei und hört auf zu laden, bevor der Platz ausgeht."
+
+#: templates/media.html:59
 msgid "No card references any media yet."
 msgstr "Noch keine Karte verweist auf Medien."
 
-#: templates/media.html:25
+#: templates/media.html:68
 msgid "Source"
 msgstr "Quelle"
 
-#: templates/media.html:26
+#: templates/media.html:69
 msgid "Files"
 msgstr "Dateien"
 
-#: templates/media.html:27
+#: templates/media.html:70
 msgid "Size"
 msgstr "Größe"
 
-#: templates/media.html:37
+#: templates/media.html:80
 msgid "Library"
 msgstr "Bibliothek"
 
-#: templates/media.html:40
+#: templates/media.html:83
 msgid "Manage"
 msgstr "Verwalten"
 
@@ -978,11 +1067,35 @@ msgstr ""
 "immer). Eine neue Folge wird im Hintergrund geladen und erreicht den "
 "ESPuino beim nächsten Auflegen."
 
+#: templates/settings.html:47
+msgid "ARD Sounds: cache limit"
+msgstr "ARD Sounds: Cache-Limit"
+
+#: templates/settings.html:51
+#, python-format
+msgid ""
+"Megabytes the downloaded episodes may occupy on the hub (0 = no limit). "
+"Currently in use: %(used)s MB."
+msgstr ""
+"Megabyte, die die heruntergeladenen Folgen im Hub belegen dürfen (0 = "
+"kein Limit). Aktuell belegt: %(used)s MB."
+
 #: templates/settings.html:52
+msgid ""
+"When the limit is reached, no new episodes are downloaded and the "
+"affected card says so — nothing already downloaded is deleted. Episodes "
+"no card needs any more are always removed automatically, limit or not."
+msgstr ""
+"Ist das Limit erreicht, werden keine neuen Folgen mehr geladen und die "
+"betroffene Karte sagt das auch — Geladenes wird nicht gelöscht. Folgen, "
+"die keine Karte mehr braucht, werden ohnehin immer automatisch entfernt, "
+"mit oder ohne Limit."
+
+#: templates/settings.html:62
 msgid "Hub password"
 msgstr "Hub-Passwort"
 
-#: templates/settings.html:53
+#: templates/settings.html:63
 msgid ""
 "Optional — protects the web UI below. The ESPuino-facing API stays "
 "reachable either way, since devices can't log in."
@@ -991,19 +1104,19 @@ msgstr ""
 "API bleibt in jedem Fall erreichbar, da sich Geräte nicht anmelden "
 "können."
 
-#: templates/settings.html:58
+#: templates/settings.html:68
 msgid "New password"
 msgstr "Neues Passwort"
 
-#: templates/settings.html:62
+#: templates/settings.html:72
 msgid "Confirm new password"
 msgstr "Neues Passwort bestätigen"
 
-#: templates/settings.html:66
+#: templates/settings.html:76
 msgid "Set password"
 msgstr "Passwort setzen"
 
-#: templates/settings.html:68
+#: templates/settings.html:78
 msgid "Remove password"
 msgstr "Passwort entfernen"
 
@@ -1034,4 +1147,22 @@ msgstr "Passwort entfernen"
 
 #~ msgid "No media files uploaded yet."
 #~ msgstr "Noch keine Mediendateien hochgeladen."
+
+#~ msgid "Podcast cache on the hub: %(size)s MB."
+#~ msgstr "Podcast-Cache im Hub: %(size)s MB."
+
+#~ msgid ""
+#~ "Only ARD Sounds episodes are stored "
+#~ "by MediaHub itself (under the data "
+#~ "volume); library files always stay in"
+#~ " place and are never copied. Episodes"
+#~ " no card references any more are "
+#~ "removed automatically."
+#~ msgstr ""
+#~ "Nur ARD-Sounds-Folgen speichert MediaHub"
+#~ " selbst (im Daten-Volume); "
+#~ "Bibliotheksdateien bleiben immer an ihrem "
+#~ "Platz und werden nie kopiert. Folgen,"
+#~ " die keine Karte mehr referenziert, "
+#~ "werden automatisch entfernt."
 

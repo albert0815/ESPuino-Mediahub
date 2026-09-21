@@ -43,6 +43,16 @@
 		<p class="muted">{{ _('Minutes between two checks for cards set to "always the newest" (0 = never check automatically; "Check episodes" on the card list always works). A new episode is downloaded in the background and reaches the ESPuino on the next tap.') }}</p>
 	</div>
 
+	<div class="form-row">
+		<label for="podcast_cache_limit_mb">{{ _('ARD Sounds: cache limit') }}</label>
+		<input type="number" id="podcast_cache_limit_mb" name="podcast_cache_limit_mb" min="0" max="1048576" style="width: 120px"
+			value="{{ settings.podcast_cache_limit_mb }}">
+		<p class="muted">
+			{{ _('Megabytes the downloaded episodes may occupy on the hub (0 = no limit). Currently in use: %(used)s MB.', used=(cache.used / 1048576) | round(1)) }}
+			{{ _('When the limit is reached, no new episodes are downloaded and the affected card says so — nothing already downloaded is deleted. Episodes no card needs any more are always removed automatically, limit or not.') }}
+		</p>
+	</div>
+
 	<div class="form-actions">
 		<button class="btn" type="submit">{{ _('Save') }}</button>
 	</div>

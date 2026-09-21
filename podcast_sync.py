@@ -23,6 +23,7 @@ over on its next poll — no heartbeat bookkeeping, no stale-lock cleanup.
 import fcntl
 import os
 import threading
+import time
 from datetime import datetime, timedelta, timezone
 
 import ard_sounds
@@ -43,6 +44,13 @@ STATE_ERROR = "error"        # last attempt failed, message says why
 LOCK_FILENAME = "podcast-sync.lock"
 POLL_SECONDS = 5
 ERROR_RETRY_SECONDS = 600
+
+# Cleanup normally rides along with a sync, which covers every case where
+# something *became* unreferenced. This interval is the safety net for a hub
+# where nothing syncs for a long time (automatic checks switched off, fixed
+# episode selections only) — the admin should never have to tidy the cache
+# by hand, so it also happens on its own.
+CLEANUP_INTERVAL_SECONDS = 3600
 
 
 def _now():
@@ -72,6 +80,7 @@ def sync_state(card):
     state.setdefault("last_synced", None)
     state.setdefault("episodes", [])
     state.setdefault("source", None)
+    state.setdefault("reason", None)
     return state
 
 
@@ -187,12 +196,13 @@ def sync_card(store, data_dir, esp_id, card_id):
         esp_id, card_id, state=STATE_SYNCING, message="", done=0, total=0
     )
 
-    def fail(message):
+    def fail(message, reason=None):
         return store.update_podcast_sync(
             esp_id,
             card_id,
             state=STATE_ERROR,
             message=message,
+            reason=reason,
             last_checked=store_lib.now_iso(),
         )
 
@@ -207,11 +217,20 @@ def sync_card(store, data_dir, esp_id, card_id):
 
     store.update_podcast_sync(esp_id, card_id, total=len(episodes), source=source)
 
+    limit_mb = store.get_settings().get("podcast_cache_limit_mb") or 0
+    budget_bytes = int(limit_mb) * 1048576
+
     files, resolved = [], []
     for index, episode in enumerate(episodes):
         relpath = podcast_cache.episode_relpath(podcast["show_id"], episode)
         try:
-            info = podcast_cache.ensure_episode(data_dir, relpath, episode.get("audio_url"))
+            info = podcast_cache.ensure_episode(
+                data_dir, relpath, episode.get("audio_url"), budget_bytes
+            )
+        except podcast_cache.PodcastCacheFullError as exc:
+            # Not the episode's fault, so don't name it — the admin needs the
+            # storage sentence, not a track title.
+            return fail(str(exc), exc.reason)
         except (podcast_cache.PodcastDownloadError, OSError) as exc:
             return fail(f"{episode.get('title') or relpath}: {exc}")
         files.append(info)
@@ -238,14 +257,18 @@ def sync_card(store, data_dir, esp_id, card_id):
 
 
 def prune_cache(store, data_dir):
-    """Drops cached episodes no card references any more."""
+    """Drops cached episodes no card references any more, and records that it
+    ran so the Media page can show the housekeeping instead of just asserting
+    it happens. Returns (files removed, bytes freed)."""
     keep = {
         entry["path"]
         for card in store.list_cards().values()
         if is_podcast(card)
         for entry in card.get("files", [])
     }
-    return podcast_cache.prune(data_dir, keep)
+    removed, freed = podcast_cache.prune(data_dir, keep)
+    store.record_podcast_cleanup(removed, freed)
+    return (removed, freed)
 
 
 # --------------------------------------------------------------------------
@@ -261,6 +284,7 @@ class SyncWorker:
         self._lock_file = None
         self._wakeup = threading.Event()
         self._thread = None
+        self._next_cleanup = 0.0
 
     def start(self):
         if self._thread is not None:
@@ -318,6 +342,15 @@ class SyncWorker:
         for card in list(self.store.list_cards().values()):
             if is_due(card, refresh_minutes, now):
                 sync_card(self.store, self.data_dir, card["esp_id"], card["card_id"])
+
+        # Runs on the first tick after startup and hourly after that, whether
+        # or not anything synced.
+        if time.monotonic() >= self._next_cleanup:
+            self._next_cleanup = time.monotonic() + CLEANUP_INTERVAL_SECONDS
+            try:
+                prune_cache(self.store, self.data_dir)
+            except OSError:
+                pass
 
 
 def start(store, data_dir):

@@ -889,3 +889,76 @@ input[type="file"]:focus,
 	font-size: .85rem;
 	color: var(--text);
 }
+
+/* --- Podcast cache panel (Media page) --- */
+.cache-panel {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+	padding: 20px 22px;
+	margin-bottom: 28px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.cache-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.cache-head h2 {
+	margin: 0;
+	font-size: 1.05rem;
+}
+
+.cache-size {
+	font-size: 1.05rem;
+	font-weight: 600;
+}
+
+.cache-size .muted {
+	font-weight: 400;
+	font-size: .85rem;
+}
+
+.cache-size-warn {
+	color: #d97706;
+}
+
+.cache-bar {
+	height: 8px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--muted) 18%, transparent);
+	overflow: hidden;
+}
+
+.cache-bar-fill {
+	height: 100%;
+	/* A cache far below its limit is a sliver, not nothing — without the
+	   minimum it rounds away to an empty bar that reads as broken. */
+	min-width: 4px;
+	background: var(--brand);
+	border-radius: 999px;
+}
+
+.cache-bar-warn {
+	background: #d97706;
+}
+
+.cache-panel p {
+	margin: 0;
+	font-size: .88rem;
+}
+
+.cache-warn {
+	padding: 10px 12px;
+	border-radius: 8px;
+	background: color-mix(in srgb, #d97706 10%, transparent);
+	border: 1px solid color-mix(in srgb, #d97706 35%, var(--border));
+	color: var(--text);
+}

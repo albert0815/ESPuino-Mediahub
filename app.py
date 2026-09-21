@@ -290,6 +290,26 @@ def _podcast_status(card):
             )
         return (kind, _("checking ARD Sounds…"))
     if kind == podcast_sync.STATE_ERROR:
+        # Storage refusals are the errors an admin can actually act on, so
+        # they get a translated sentence built here rather than the English
+        # one the background worker had to log without a request locale.
+        if state["reason"] == "cache_full":
+            return (
+                kind,
+                _(
+                    "Cache limit of %(limit)s MB reached — no new episodes are "
+                    "downloaded. Raise it in Settings or keep fewer episodes.",
+                    limit=store.get_settings().get("podcast_cache_limit_mb"),
+                ),
+            )
+        if state["reason"] == "disk_full":
+            return (
+                kind,
+                _(
+                    "Not enough free disk space on the hub — MediaHub stopped "
+                    "before filling it up."
+                ),
+            )
         return (kind, state["message"] or _("sync failed"))
     return (kind, _("waiting for download"))
 
@@ -335,6 +355,10 @@ def cards():
     return render_template(
         "cards.html",
         cards=rows,
+        # A lazy delete leaves the downloaded episodes on the ESPuino's SD
+        # card; for a podcast card that is worth saying out loud at the
+        # moment of deletion, not just in the docs.
+        delete_mode=store.get_settings()["delete_mode"],
         only_pending=only_pending,
         devices=devices_by_id,
         esp_id_filter=esp_id_filter,
@@ -752,10 +776,44 @@ def media_overview():
         "media.html",
         rows=rows,
         # Library bytes live in the admin's own (read-only) library; podcast
-        # bytes are the only media MediaHub itself stores, so the cache size
-        # is worth calling out separately.
-        podcast_cache_bytes=podcast_cache.total_bytes(DATA_DIR),
+        # bytes are the only media MediaHub itself stores, so the cache gets
+        # its own panel — how much it holds, what its budget is, and proof
+        # that the automatic cleanup is running.
+        cache=_podcast_cache_panel(),
     )
+
+
+def _podcast_cache_panel():
+    """Everything the Media page says about the episode cache.
+
+    Deliberately more than a number: the cache is the only storage MediaHub
+    owns, it fills itself in the background, and it empties itself again —
+    so the page has to make both halves of that visible, otherwise the only
+    honest thing an admin could do is go and look in the data volume.
+    """
+    settings = store.get_settings()
+    state = store.get_podcast_cache_state()
+    used = podcast_cache.total_bytes(DATA_DIR)
+    limit_mb = settings.get("podcast_cache_limit_mb") or 0
+    limit = int(limit_mb) * 1048576
+
+    episodes = 0
+    for card in store.list_cards().values():
+        if card["kind"] == "podcast":
+            episodes += len(card.get("files", []))
+
+    return {
+        "used": used,
+        "limit": limit,
+        "percent": round(used * 100 / limit) if limit else 0,
+        "near_limit": bool(limit) and used * 100 / limit >= 90,
+        "free": podcast_cache.free_bytes(DATA_DIR),
+        "episode_slots": episodes,
+        "last_cleanup_at": state.get("last_cleanup_at"),
+        "last_removal_at": state.get("last_removal_at"),
+        "last_removed_files": state.get("last_removed_files") or 0,
+        "last_removed_bytes": state.get("last_removed_bytes") or 0,
+    }
 
 
 @app.route("/media/browse")
@@ -815,9 +873,21 @@ def settings():
             )
             return redirect(url_for("settings"))
 
+        try:
+            cache_limit = int(request.form.get("podcast_cache_limit_mb", ""))
+        except ValueError:
+            cache_limit = -1
+        if 0 <= cache_limit <= 1024 * 1024:
+            store.set_podcast_cache_limit_mb(cache_limit)
+        else:
+            flash(_("The cache limit must be between 0 and 1048576 MB."), "error")
+            return redirect(url_for("settings"))
+
         flash(_("Settings saved."), "success")
         return redirect(url_for("settings"))
-    return render_template("settings.html", settings=store.get_settings())
+    return render_template(
+        "settings.html", settings=store.get_settings(), cache=_podcast_cache_panel()
+    )
 
 
 @app.route("/settings/password", methods=["POST"])

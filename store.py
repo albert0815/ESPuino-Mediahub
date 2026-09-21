@@ -29,6 +29,10 @@ _lock = threading.Lock()
 
 DEFAULT_RECURSION_DEPTH = 3
 DEFAULT_PODCAST_REFRESH_MINUTES = 360
+# How much disk the ARD Sounds episode cache may occupy (MB, 0 = no limit).
+# Generous enough that a normal household never meets it, low enough that a
+# misconfigured card can't quietly eat a NAS volume.
+DEFAULT_PODCAST_CACHE_LIMIT_MB = 4096
 
 _DEFAULT_DB = {
     "settings": {
@@ -38,6 +42,7 @@ _DEFAULT_DB = {
         # How often the hub re-checks an ARD Sounds card set to "latest
         # episode" for a newer one (0 = only when asked to, §7.3).
         "podcast_refresh_minutes": DEFAULT_PODCAST_REFRESH_MINUTES,
+        "podcast_cache_limit_mb": DEFAULT_PODCAST_CACHE_LIMIT_MB,
     },
     "devices": {},
     "cards": {},
@@ -401,6 +406,35 @@ class Store:
             return minutes
 
         return self._mutate(mutate)
+
+    def set_podcast_cache_limit_mb(self, limit_mb):
+        def mutate(data):
+            data["settings"]["podcast_cache_limit_mb"] = limit_mb
+            return limit_mb
+
+        return self._mutate(mutate)
+
+    # -- podcast cache bookkeeping ---------------------------------------
+    def record_podcast_cleanup(self, files, freed_bytes):
+        """Remembers the last cache cleanup so the Media page can show that
+        housekeeping is actually happening — the admin never has to tidy the
+        cache by hand, but they should be able to see that something does."""
+
+        def mutate(data):
+            data.setdefault("podcast_cache", {})
+            data["podcast_cache"]["last_cleanup_at"] = now_iso()
+            if files:
+                data["podcast_cache"]["last_removed_files"] = files
+                data["podcast_cache"]["last_removed_bytes"] = freed_bytes
+                data["podcast_cache"]["last_removal_at"] = data["podcast_cache"][
+                    "last_cleanup_at"
+                ]
+            return data["podcast_cache"]
+
+        return self._mutate(mutate)
+
+    def get_podcast_cache_state(self):
+        return dict(self._read().get("podcast_cache") or {})
 
     def set_password_hash(self, password_hash):
         """password_hash is None to disable the login requirement entirely."""

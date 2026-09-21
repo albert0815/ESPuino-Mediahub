@@ -57,11 +57,34 @@ DEFAULT_EXTENSION = ".mp3"
 DOWNLOAD_TIMEOUT = 60  # seconds per socket operation, not for the whole transfer
 CHUNK_SIZE = 1024 * 1024
 
+# Never let the cache take the data volume down to the last byte: db.json,
+# the secret key and every future write live there too. A download that would
+# eat into this reserve is refused before a single byte is written, with a
+# message that says so — filling the admin's disk silently would be the worst
+# possible failure mode for a background job.
+MIN_FREE_BYTES = 512 * 1024 * 1024
+
 _UNSAFE_CHARS = re.compile(r"[^0-9A-Za-z._-]")
 
 
 class PodcastDownloadError(Exception):
     """A download that did not produce a usable cached file."""
+
+
+class PodcastCacheFullError(PodcastDownloadError):
+    """Refused before writing: disk reserve or cache budget would be broken.
+
+    Separate from a plain download failure because it is not transient, and
+    because the admin needs a sentence they can act on. `reason` is
+    "cache_full" or "disk_full" so the web UI can render that sentence in the
+    reader's own language — the message here is the English fallback for
+    logs, since the background worker has no request locale to translate
+    against.
+    """
+
+    def __init__(self, reason, message):
+        super().__init__(message)
+        self.reason = reason
 
 
 def cache_root(data_dir):
@@ -95,6 +118,16 @@ def episode_relpath(show_id, episode, mime_type=None):
     return f"{_safe(show_id)}/{_safe(date)}_{_safe(episode['id'])}{ext}"
 
 
+def free_bytes(data_dir):
+    """Free space on the volume holding the cache, or None if unknowable."""
+    try:
+        os.makedirs(cache_root(data_dir), exist_ok=True)
+        stat = os.statvfs(cache_root(data_dir))
+    except (OSError, AttributeError):
+        return None
+    return stat.f_bavail * stat.f_frsize
+
+
 def cached_file_info(data_dir, relpath):
     """`{"path", "size", "sha256"}` for an already-cached episode, or None.
 
@@ -104,7 +137,32 @@ def cached_file_info(data_dir, relpath):
     return media_library.stat_and_hash(cache_root(data_dir), relpath)
 
 
-def download_episode(data_dir, relpath, audio_url):
+def _check_budget(data_dir, incoming_bytes, budget_bytes):
+    """Raises PodcastCacheFullError if storing `incoming_bytes` more would
+    break the disk reserve or the configured cache budget.
+
+    `incoming_bytes` may be 0 when the server sent no Content-Length; the
+    disk reserve is then still checked, just without the extra headroom.
+    """
+    free = free_bytes(data_dir)
+    if free is not None and free - incoming_bytes < MIN_FREE_BYTES:
+        raise PodcastCacheFullError(
+            "disk_full",
+            "Not enough free disk space on the hub "
+            f"({free // 1048576} MB left, {MIN_FREE_BYTES // 1048576} MB kept free).",
+        )
+    if budget_bytes:
+        used = total_bytes(data_dir)
+        if used + incoming_bytes > budget_bytes:
+            raise PodcastCacheFullError(
+                "cache_full",
+                f"The podcast cache limit of {budget_bytes // 1048576} MB is reached "
+                f"({used // 1048576} MB in use). Raise it in Settings, or let cards "
+                "keep fewer episodes.",
+            )
+
+
+def download_episode(data_dir, relpath, audio_url, budget_bytes=0):
     """Downloads one episode into the cache and returns its file info.
 
     Streams into `<relpath>.tmp`, hashes while writing and only then renames
@@ -113,6 +171,11 @@ def download_episode(data_dir, relpath, audio_url):
     """
     if not audio_url:
         raise PodcastDownloadError("ARD Sounds returned no audio URL for this episode.")
+
+    # Checked twice on purpose: once before opening the connection (cheap,
+    # catches the already-full case) and again once the response reveals the
+    # actual size, which is the number that decides whether it fits.
+    _check_budget(data_dir, 0, budget_bytes)
 
     root = cache_root(data_dir)
     target = media_library.resolve(root, relpath)
@@ -129,16 +192,24 @@ def download_episode(data_dir, relpath, audio_url):
     hasher = hashlib.sha256()
     size = 0
     try:
-        with urllib.request.urlopen(request, timeout=DOWNLOAD_TIMEOUT) as response, open(
-            tmp_path, "wb"
-        ) as out:
-            while True:
-                chunk = response.read(CHUNK_SIZE)
-                if not chunk:
-                    break
-                out.write(chunk)
-                hasher.update(chunk)
-                size += len(chunk)
+        with urllib.request.urlopen(request, timeout=DOWNLOAD_TIMEOUT) as response:
+            try:
+                announced = int(response.headers.get("Content-Length") or 0)
+            except ValueError:
+                announced = 0
+            _check_budget(data_dir, announced, budget_bytes)
+
+            with open(tmp_path, "wb") as out:
+                while True:
+                    chunk = response.read(CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    out.write(chunk)
+                    hasher.update(chunk)
+                    size += len(chunk)
+    except PodcastCacheFullError:
+        _remove(tmp_path)
+        raise
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
         _remove(tmp_path)
         raise PodcastDownloadError(f"Download failed: {exc}") from exc
@@ -156,12 +227,16 @@ def download_episode(data_dir, relpath, audio_url):
     return {"path": relpath, "size": size, "sha256": hasher.hexdigest()}
 
 
-def ensure_episode(data_dir, relpath, audio_url):
-    """File info for an episode, downloading it only if not cached yet."""
+def ensure_episode(data_dir, relpath, audio_url, budget_bytes=0):
+    """File info for an episode, downloading it only if not cached yet.
+
+    A cache hit costs nothing and is never refused — the budget only gates
+    *new* bytes.
+    """
     info = cached_file_info(data_dir, relpath)
     if info is not None:
         return info
-    return download_episode(data_dir, relpath, audio_url)
+    return download_episode(data_dir, relpath, audio_url, budget_bytes)
 
 
 def total_bytes(data_dir):
