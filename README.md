@@ -89,6 +89,8 @@ Functional hub with device/card management, per-card manifests
 (`version` = SHA-256, including the force-refresh lever), a library file/folder
 browser for assignment (no uploads — files stay in place under `./media`),
 `pending` registration, lazy/secure delete, and an optional web UI password.
-Open (see `../mediahub-konzept.md` §15): the ESPuino-side implementation
-(`MEDIAHUB` play mode, `MediaHub_EnsureCard`, LED download animation) is a
-separate firmware topic not yet started.
+The ESPuino side has shipped: `MEDIAHUB` (play mode 18) and
+`src/MediaHub.cpp` — manifest fetch, SHA-256-verified download to SD,
+stale/re-sync, LED download animation — are part of ESPuino firmware **3.0
+(07.09.2026)**. MediaHub cards therefore need **firmware 3.0 or newer** on
+the device; everything below that has no `mediahub://` support at all.
