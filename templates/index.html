@@ -31,14 +31,14 @@
 	<a class="card" href="{{ url_for('media_overview') }}">
 		<div class="card-icon">📁</div>
 		<h2>{{ _('Media') }}</h2>
-		<p>{{ _('Storage usage per card, plus the size of the hub\'s podcast episode cache.') }}</p>
+		<p>{{ _('Storage usage per card — what each ESPuino has to download and keep.') }}</p>
 		<span class="badge">{{ (total_bytes / 1048576) | round(1) }}&nbsp;MB</span>
 	</a>
 
 	<a class="card" href="{{ url_for('settings') }}">
 		<div class="card-icon">⚙️</div>
 		<h2>{{ _('Settings') }}</h2>
-		<p>{{ _('Delete behavior (lazy/secure), recursion depth, podcast episode checks.') }}</p>
+		<p>{{ _('Delete behavior (lazy/secure), recursion depth, podcast checks and cache.') }}</p>
 	</a>
 </div>
 {% endblock %}
