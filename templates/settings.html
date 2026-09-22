@@ -5,7 +5,7 @@
 {% block content %}
 <section class="page-head">
 	<h1>{{ _('Settings') }}</h1>
-	<p class="muted">{{ _('Configure how the hub behaves when a card assignment is deleted, and how deep it looks into subfolders for recursive play modes.') }}</p>
+	<p class="muted">{{ _('Configure how the hub behaves when a card assignment is deleted, how deep it looks into subfolders for recursive play modes, and how often it checks podcast feeds for new episodes.') }}</p>
 </section>
 
 <form class="form-card" method="post">
@@ -34,6 +34,23 @@
 		<input type="number" id="recursion_depth" name="recursion_depth" min="0" max="20" style="width: 100px"
 			value="{{ settings.recursion_depth }}">
 		<p class="muted">{{ _('How many subfolder levels "Use folder" descends into for recursive play modes (Audiobook recursive, All tracks recursive). Non-recursive play modes always use just the folder itself, regardless of this setting.') }}</p>
+	</div>
+
+	<div class="form-row">
+		<label for="podcast_refresh_minutes">{{ _('Podcasts: check for new episodes every') }}</label>
+		<input type="number" id="podcast_refresh_minutes" name="podcast_refresh_minutes" min="0" max="10080" style="width: 100px"
+			value="{{ settings.podcast_refresh_minutes }}">
+		<p class="muted">{{ _('Minutes between two checks for cards set to "always the newest" (0 = never check automatically; "Check episodes" on the card list always works). A new episode is downloaded in the background and reaches the ESPuino on the next tap.') }}</p>
+	</div>
+
+	<div class="form-row">
+		<label for="podcast_cache_limit_mb">{{ _('Podcasts: cache limit') }}</label>
+		<input type="number" id="podcast_cache_limit_mb" name="podcast_cache_limit_mb" min="0" max="1048576" style="width: 120px"
+			value="{{ settings.podcast_cache_limit_mb }}">
+		<p class="muted">
+			{{ _('Megabytes the downloaded episodes may occupy on the hub (0 = no limit). Currently in use: %(used)s MB.', used=(cache.used / 1048576) | round(1)) }}
+			{{ _('When the limit is reached, no new episodes are downloaded and the affected card says so — nothing already downloaded is deleted. Episodes no card needs any more are always removed automatically, limit or not.') }}
+		</p>
 	</div>
 
 	<div class="form-actions">
