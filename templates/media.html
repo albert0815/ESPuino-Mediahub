@@ -5,11 +5,58 @@
 {% block content %}
 <section class="page-head">
 	<h1>{{ _('Media') }}</h1>
-	<p class="muted">{{ _('Storage usage per card. Uploads happen right in the card assignment form.') }}</p>
+	<p class="muted">{{ _('Storage usage per card — that is how much the ESPuino has to download and keep on its SD card.') }}</p>
+</section>
+
+<section class="cache-panel">
+	<div class="cache-head">
+		<h2>{{ _('Podcast cache') }}</h2>
+		<span class="cache-size{{ ' cache-size-warn' if cache.near_limit }}">
+			{{ (cache.used / 1048576) | round(1) }}&nbsp;MB
+			{% if cache.limit %}<span class="muted">{{ _('of %(limit)s MB', limit=(cache.limit / 1048576) | round(0) | int) }}</span>{% endif %}
+		</span>
+	</div>
+
+	{% if cache.limit %}
+	<div class="cache-bar" role="img"
+		aria-label="{{ _('%(percent)s%% of the cache limit used', percent=cache.percent) }}">
+		{% if cache.used %}<div class="cache-bar-fill{{ ' cache-bar-warn' if cache.near_limit }}" style="width: {{ [cache.percent, 100] | min }}%"></div>{% endif %}
+	</div>
+	{% endif %}
+
+	<p class="muted">
+		{{ _('This is the only media MediaHub stores itself: the ARD Sounds episodes it downloaded for your cards (%(num)s in total). Files from your library always stay where they are and are never copied.', num=cache.episode_slots) }}
+	</p>
+
+	<p class="muted">
+		<strong>{{ _('You never have to clean this up.') }}</strong>
+		{{ _('MediaHub removes an episode as soon as no card needs it any more — when a card moves on to a newer episode, when its selection changes, and when a card or device is deleted. It also checks once an hour on its own.') }}
+		{% if cache.last_removal_at %}
+			{{ _('Last removal: %(when)s (%(files)s episodes, %(size)s MB freed).',
+				when=cache.last_removal_at | shortdt,
+				files=cache.last_removed_files,
+				size=(cache.last_removed_bytes / 1048576) | round(1)) }}
+		{% elif cache.last_cleanup_at %}
+			{{ _('Last checked: %(when)s — nothing to remove.', when=cache.last_cleanup_at | shortdt) }}
+		{% endif %}
+	</p>
+
+	{% if cache.near_limit %}
+	<p class="cache-warn">
+		{{ _('The cache is close to its limit. New episodes are no longer downloaded once it is reached — raise the limit in Settings, or let your cards keep fewer episodes. Nothing already downloaded is deleted for this.') }}
+	</p>
+	{% endif %}
+
+	{% if cache.free is not none %}
+	<p class="muted">{{ _('Free space on the data volume: %(size)s MB. MediaHub always keeps 512 MB free and stops downloading before it runs out.', size=(cache.free / 1048576) | round(0) | int) }}</p>
+	{% endif %}
+</section>
+
+<section>
 </section>
 
 {% if not rows %}
-	<p class="empty-state">{{ _('No media files uploaded yet.') }}</p>
+	<p class="empty-state">{{ _('No card references any media yet.') }}</p>
 {% else %}
 	<div class="table-wrap">
 		<table>
@@ -18,6 +65,7 @@
 					<th>{{ _('Card ID') }}</th>
 					<th>{{ _('Device') }}</th>
 					<th>{{ _('Name') }}</th>
+					<th>{{ _('Source') }}</th>
 					<th>{{ _('Files') }}</th>
 					<th>{{ _('Size') }}</th>
 					<th></th>
@@ -29,6 +77,7 @@
 					<td><code>{{ card.card_id }}</code></td>
 					<td>{{ device_label }}</td>
 					<td>{{ card.name or "—" }}</td>
+					<td>{{ _('ARD Sounds') if card.kind == "podcast" else _('Library') }}</td>
 					<td>{{ card.files | length }}</td>
 					<td>{{ (total_size / 1048576) | round(1) }}&nbsp;MB</td>
 					<td><a class="btn btn-small" href="{{ url_for('assign_card', esp_id=card.esp_id, card_id=card.card_id) }}">{{ _('Manage') }}</a></td>
