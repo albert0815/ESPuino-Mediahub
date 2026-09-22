@@ -6,6 +6,7 @@ See ../mediahub-konzept.md for the full specification.
 
 import json
 import os
+import re
 
 from flask import (
     Flask,
@@ -27,6 +28,7 @@ import ard_sounds
 import manifest as manifest_lib
 import media_library
 import podcast_cache
+import podcast_feed
 import podcast_sync
 import store as store_lib
 from espuino_client import delete_rfid_on_device
@@ -256,7 +258,12 @@ def _podcast_detail(card):
     """"<show> · newest episode" resp. the episode titles actually synced —
     what a podcast card shows in the Content column."""
     podcast = card.get("podcast") or {}
-    show = podcast.get("show_title") or _("ARD Sounds")
+    default = (
+        _("Podcast feed")
+        if podcast_sync.source_of(podcast) == podcast_sync.SOURCE_RSS
+        else _("ARD Sounds")
+    )
+    show = podcast.get("show_title") or default
     if podcast.get("selection") == "latest":
         count = podcast.get("episode_count") or 1
         which = ngettext("newest episode", "%(num)s newest episodes", count) % {"num": count}
@@ -426,6 +433,17 @@ def duplicate_card(esp_id, card_id):
     return redirect(url_for("cards"))
 
 
+_RSS_EPISODE_ID = re.compile(r"^rss-[0-9a-f]{16}$")
+
+
+def _is_valid_episode_id(source, episode_id):
+    """ARD episode ids are numeric; feed ids are the hash podcast_feed
+    derives from an episode's GUID."""
+    if source == podcast_sync.SOURCE_RSS:
+        return bool(_RSS_EPISODE_ID.match(episode_id))
+    return episode_id.isdigit()
+
+
 def _parse_podcast_form(form):
     """Validates the ARD Sounds picker's hidden JSON field.
 
@@ -439,9 +457,16 @@ def _parse_podcast_form(form):
     if not isinstance(raw, dict):
         raw = {}
 
-    show_id = str(raw.get("show_id") or "").strip()
-    if not show_id.isdigit():
-        return (None, _("Please pick a show from ARD Sounds first."))
+    source = podcast_sync.SOURCE_RSS if raw.get("source") == podcast_sync.SOURCE_RSS else podcast_sync.SOURCE_ARD
+    show_id, feed_url = "", ""
+    if source == podcast_sync.SOURCE_RSS:
+        feed_url = str(raw.get("feed_url") or "").strip()
+        if not feed_url.startswith(("http://", "https://")):
+            return (None, _("Please load a podcast feed first."))
+    else:
+        show_id = str(raw.get("show_id") or "").strip()
+        if not show_id.isdigit():
+            return (None, _("Please pick a show from ARD Sounds first."))
 
     selection = raw.get("selection")
     if selection not in ("latest", "episodes"):
@@ -456,7 +481,7 @@ def _parse_podcast_form(form):
             if not isinstance(entry, dict):
                 continue
             episode_id = str(entry.get("id") or "").strip()
-            if not episode_id.isdigit():
+            if not _is_valid_episode_id(source, episode_id):
                 continue
             try:
                 duration = int(entry.get("duration") or 0)
@@ -496,11 +521,9 @@ def _parse_podcast_form(form):
 
     return (
         {
-            # Only ARD Sounds for now; the field keeps the door open for other
-            # catalogues (a plain podcast RSS feed being the obvious next one)
-            # without another schema migration.
-            "source": "ard",
+            "source": source,
             "show_id": show_id,
+            "feed_url": feed_url or None,
             "show_urn": str(raw.get("show_urn") or "") or None,
             "show_title": str(raw.get("show_title") or "")[:300],
             "show_image": str(raw.get("show_image") or "") or None,
@@ -612,6 +635,7 @@ def assign_card(esp_id, card_id):
         podcast_play_modes=manifest_lib.PODCAST_PLAY_MODES,
         default_podcast_play_mode=manifest_lib.DEFAULT_PODCAST_PLAY_MODE,
         max_podcast_episodes=podcast_sync.MAX_EPISODES,
+        podcast_sources={"ard": podcast_sync.SOURCE_ARD, "rss": podcast_sync.SOURCE_RSS},
     )
 
 
@@ -651,6 +675,33 @@ def podcast_episodes(show_id):
     except ard_sounds.ArdSoundsError as exc:
         return jsonify(error=str(exc)), 502
     return jsonify(offset=max(0, offset), **listing)
+
+
+@app.route("/podcast/feed")
+def podcast_feed_preview():
+    """Title and episodes of a podcast feed the admin pasted.
+
+    The URL comes from a form field here rather than from a catalogue, which
+    is the point of the source — the hub is being asked to read a feed of the
+    admin's choosing. It is an authenticated action (the assignment UI sits
+    behind the optional hub password), the scheme is restricted to HTTP(S)
+    and the response is size-capped; beyond that the hub does not second-guess
+    which feed its own admin may subscribe to, since a self-hosted feed on the
+    same LAN is a perfectly ordinary thing to want.
+    """
+    feed_url = (request.args.get("url") or "").strip()
+    try:
+        feed = podcast_feed.fetch_feed(feed_url)
+    except podcast_feed.PodcastFeedError as exc:
+        return jsonify(error=str(exc)), 502
+    return jsonify(
+        feed_url=feed["feed_url"],
+        title=feed["title"],
+        description=feed["description"],
+        image_url=feed["image_url"],
+        total=len(feed["episodes"]),
+        episodes=feed["episodes"],
+    )
 
 
 @app.route("/podcast/status")

@@ -77,7 +77,7 @@
 					<td><code>{{ card.card_id }}</code></td>
 					<td>{{ device_label }}</td>
 					<td>{{ card.name or "—" }}</td>
-					<td>{{ _('ARD Sounds') if card.kind == "podcast" else _('Library') }}</td>
+					<td>{{ _('Podcast') if card.kind == "podcast" else _('Library') }}</td>
 					<td>{{ card.files | length }}</td>
 					<td>{{ (total_size / 1048576) | round(1) }}&nbsp;MB</td>
 					<td><a class="btn btn-small" href="{{ url_for('assign_card', esp_id=card.esp_id, card_id=card.card_id) }}">{{ _('Manage') }}</a></td>

@@ -258,7 +258,18 @@ Fehler → Zustand "error" + Meldung im Karten-UI; Retry nach 10 Minuten
 - **Nutzungsbedingungen.** ARD Sounds darf „ausschließlich zu privaten, nichtkommerziellen Zwecken“ genutzt werden; die Bedingungen verlangen für „Vervielfältigung … oder Speicherung“ zudem eine schriftliche Zustimmung. Genau das tut ein Hub, der Folgen zwischenspeichert — dem steht die Privatkopie-Schranke (§ 53 UrhG) gegenüber, die eine einseitige AGB-Klausel Privatnutzern nicht einfach nehmen kann. Die Netz-Warnung darunter verkleinert den Fußabdruck, löst die Frage aber nicht auf. Wer den Hub öffentlich betreibt oder kommerziell nutzt, ist eindeutig außerhalb.
 - **ARD hat keine offiziell dokumentierte, stabile API.** Der Hub spricht `api.ardaudiothek.de/graphql` — denselben Endpunkt, den die ARD-Sounds-Website selbst nutzt und an dem auch die Community-Tools hängen. Das kann jederzeit brechen; alles fällt daher „soft“ aus (lesbare Fehlermeldung an der Karte, Retry, nie eine Exception in einem Request). Anders als beim Scraping-Weg von espuino-podcast-server (Sendungsseite → Episoden-URN → Embed-Seite → numerische ID → GraphQL) reicht hier **eine** GraphQL-Abfrage pro Schritt — kein HTML-Parsing, keine Regexe auf fremdem Markup. Die Nutzungsbedingungen von ARD Sounds gelten; das ist ein privates, nicht-kommerzielles Komfort-Feature.
 - **Hörbuch-Modus + „immer die neueste“:** Die gemerkte Abspielposition liegt im NVS an der Karte (§8.1), nicht an der Folge — wechselt die Folge, wandert die alte Position mit. Das UI weist darauf hin; für „immer die neueste“ ist ein Einzeltitel-Modus meist die bessere Wahl.
-- **Nur ARD Sounds.** Das Feld `source` an der Karte ist auf Erweiterung angelegt (ein gewöhnlicher Podcast-RSS-Feed wäre der naheliegende nächste Fall), implementiert ist bewusst nur ARD Sounds.
+- **Zwei Quellen, sonst nichts.** Neben ARD Sounds gibt es gewöhnliche Podcast-Feeds (§7.4); weitere Kataloge wären über dasselbe `source`-Feld nachrüstbar.
+
+### 7.4 Zweite Quelle: gewöhnliche Podcast-Feeds
+
+Eine Podcast-Karte kennt zwei Quellen. Neben dem ARD-Sounds-Katalog (§7.3) kann der Admin auch schlicht **die Feed-Adresse eines beliebigen Podcasts** einfügen — dieselbe Adresse, die eine Podcast-App abonnieren würde.
+
+Alles dahinter ist identisch: dieselbe Auswahl („immer die neueste" bzw. feste Folgen), derselbe Hintergrund-Sync, derselbe Cache mitsamt Aufräumen und Limits, dasselbe Datei-Manifest. Unterschiedlich ist nur, **woher die Episodenliste kommt** — Katalog-Abfrage oder RSS-Feed — und in welchem Cache-Unterordner die Folgen landen (statt der ARD-Sendungs-ID ein Hash der Feed-Adresse).
+
+- **Keine ARD-Abhängigkeit.** Diese Quelle spricht keine inoffizielle API an, sondern liest genau das, wofür das Podcast-Format existiert. Sie ist damit die robustere der beiden und die einzige, die auch für Podcasts außerhalb der ARD funktioniert.
+- **Die Feed-Adresse kommt vom Admin**, nicht aus einem Katalog — das ist der Zweck der Quelle. Der Abruf ist auf `http(s)` beschränkt und in der Größe begrenzt; darüber hinaus schreibt der Hub seinem eigenen (angemeldeten) Admin nicht vor, welchen Feed er abonnieren darf, denn ein selbst gehosteter Feed im gleichen Netz ist ein völlig normaler Wunsch.
+- **Ein Feed ist ein gleitendes Fenster.** Anders als der ARD-Katalog listet er nur die jüngsten Folgen. Eine fest gewählte Folge, die herausgerutscht ist, lässt sich nicht mehr auflösen; die Karte sagt das dann in einem Satz statt in einem Download-Fehler je Folge.
+- **Episoden-Identität** ist die `<guid>` des Feeds, gehasht auf ein kurzes, dateisystemsicheres Kürzel.
 
 ## 8. playMode: `MEDIAHUB`-Marker im NVS, echter Modus aus dem Manifest
 

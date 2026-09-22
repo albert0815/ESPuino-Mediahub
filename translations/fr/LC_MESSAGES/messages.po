@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ESPuino MediaHub\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-22 08:00+0000\n"
+"POT-Creation-Date: 2026-09-22 08:06+0000\n"
 "PO-Revision-Date: 2026-07-15 09:43+0200\n"
 "Last-Translator: ESPuino MediaHub\n"
 "Language: fr\n"
@@ -17,23 +17,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:145
+#: app.py:147
 msgid "Incorrect password."
 msgstr "Mot de passe incorrect."
 
-#: app.py:170
+#: app.py:172
 #, python-format
 msgid "%(num)s device"
 msgid_plural "%(num)s devices"
 msgstr[0] "%(num)s appareil"
 msgstr[1] "%(num)s appareils"
 
-#: app.py:190
+#: app.py:192
 #, python-format
 msgid "Delete ESPuino %(esp_id)s?"
 msgstr "Supprimer l'ESPuino %(esp_id)s ?"
 
-#: app.py:192
+#: app.py:194
 #, python-format
 msgid ""
 "There is still %(num)s card assignment for this ESPuino, which must be "
@@ -52,11 +52,11 @@ msgstr[1] ""
 "doivent d'abord être supprimées. Les supprimer automatiquement ? Remarque"
 " : les cartes ne sont supprimées que localement dans MediaHub."
 
-#: app.py:218
+#: app.py:220
 msgid "Alias saved."
 msgstr "Alias enregistré."
 
-#: app.py:231
+#: app.py:233
 #, python-format
 msgid ""
 "Device %(esp_id)s and its %(num)s card assignment(s) deleted (locally in "
@@ -65,54 +65,58 @@ msgstr ""
 "Appareil %(esp_id)s et ses %(num)s assignation(s) de carte supprimés "
 "(uniquement localement dans MediaHub)."
 
-#: app.py:233
+#: app.py:235
 #, python-format
 msgid "Device %(esp_id)s deleted."
 msgstr "Appareil %(esp_id)s supprimé."
 
-#: app.py:242 templates/card_form.html:29
+#: app.py:244 templates/card_form.html:29
 msgid "Webradio"
 msgstr "Webradio"
 
-#: app.py:246
+#: app.py:248
 #, python-format
 msgid "%(num)s episode"
 msgid_plural "%(num)s episodes"
 msgstr[0] "%(num)s épisode"
 msgstr[1] "%(num)s épisodes"
 
-#: app.py:248
+#: app.py:250
 #, python-format
 msgid "%(num)s file"
 msgid_plural "%(num)s files"
 msgstr[0] "%(num)s fichier"
 msgstr[1] "%(num)s fichiers"
 
-#: app.py:259 templates/card_form.html:33 templates/media.html:80
+#: app.py:262
+msgid "Podcast feed"
+msgstr "Flux podcast"
+
+#: app.py:264 templates/card_form.html:91
 msgid "ARD Sounds"
 msgstr "ARD Sounds"
 
-#: app.py:262
+#: app.py:269
 #, python-format
 msgid "newest episode"
 msgid_plural "%(num)s newest episodes"
 msgstr[0] "épisode le plus récent"
 msgstr[1] "%(num)s épisodes les plus récents"
 
-#: app.py:274
+#: app.py:281
 msgid "up to date"
 msgstr "à jour"
 
-#: app.py:280
+#: app.py:287
 #, python-format
 msgid "downloading %(done)s/%(total)s"
 msgstr "téléchargement %(done)s/%(total)s"
 
-#: app.py:285
+#: app.py:292
 msgid "checking ARD Sounds…"
 msgstr "interrogation d’ARD Sounds…"
 
-#: app.py:294
+#: app.py:301
 #, python-format
 msgid ""
 "Cache limit of %(limit)s MB reached — no new episodes are downloaded. "
@@ -121,7 +125,7 @@ msgstr ""
 "Limite du cache de %(limit)s MB atteinte — aucun nouvel épisode n’est "
 "téléchargé. Augmentez-la dans les réglages ou gardez moins d’épisodes."
 
-#: app.py:303
+#: app.py:310
 msgid ""
 "Not enough free disk space on the hub — MediaHub stopped before filling "
 "it up."
@@ -129,66 +133,70 @@ msgstr ""
 "Espace disque insuffisant sur le hub — MediaHub s’est arrêté avant de le "
 "remplir."
 
-#: app.py:307
+#: app.py:314
 msgid "sync failed"
 msgstr "échec de la synchronisation"
 
-#: app.py:308
+#: app.py:315
 msgid "waiting for download"
 msgstr "en attente du téléchargement"
 
-#: app.py:369
+#: app.py:376
 msgid "Card ID must be exactly 12 digits."
 msgstr "L'ID de la carte doit comporter exactement 12 chiffres."
 
-#: app.py:373
+#: app.py:380
 msgid "Please choose a known ESPuino."
 msgstr "Veuillez choisir un ESPuino connu."
 
-#: app.py:382 app.py:402
+#: app.py:389 app.py:409
 #, python-format
 msgid "Card %(id)s is already assigned on this ESPuino — opening it for editing."
 msgstr ""
 "La carte %(id)s est déjà assignée sur cet ESPuino — ouverture pour "
 "modification."
 
-#: app.py:396
+#: app.py:403
 msgid "Please choose a different, known ESPuino."
 msgstr "Veuillez choisir un autre ESPuino connu."
 
-#: app.py:425
+#: app.py:432
 #, python-format
 msgid "Card %(id)s duplicated to %(esp_id)s."
 msgstr "Carte %(id)s dupliquée sur %(esp_id)s."
 
-#: app.py:444
+#: app.py:465
+msgid "Please load a podcast feed first."
+msgstr "Veuillez d'abord charger un flux podcast."
+
+#: app.py:469
 msgid "Please pick a show from ARD Sounds first."
 msgstr "Veuillez d’abord choisir une émission sur ARD Sounds."
 
-#: app.py:475
+#: app.py:500
 msgid "Please select at least one episode."
 msgstr "Veuillez sélectionner au moins un épisode."
 
-#: app.py:488 app.py:562
+#: app.py:513 app.py:585
 msgid "Please choose a valid play mode."
 msgstr "Veuillez choisir un mode de lecture valide."
 
-#: app.py:494
+#: app.py:519
 msgid "This play mode only supports a single episode — please select just one."
 msgstr ""
 "Ce mode de lecture ne prend en charge qu'un seul épisode — veuillez n'en "
 "sélectionner qu'un."
 
-#: app.py:536
+#: app.py:559
 msgid "A stream URL is required for webradio."
 msgstr "Une URL de flux est requise pour la webradio."
 
-#: app.py:552
+#: app.py:575
 #, python-format
 msgid "Card %(id)s assigned — downloading the episodes now."
 msgstr "Carte %(id)s assignée — les épisodes sont en cours de téléchargement."
 
-#: app.py:581
+#: app.py:604
 #, python-format
 msgid ""
 "Some selected files could not be used (missing, or not readable by the "
@@ -197,37 +205,37 @@ msgstr ""
 "Certains fichiers sélectionnés n'ont pas pu être utilisés (absents ou non"
 " lisibles par l'utilisateur du conteneur) et ont été ignorés : %(paths)s"
 
-#: app.py:590
+#: app.py:613
 msgid "At least one audio file is required."
 msgstr "Au moins un fichier audio est requis."
 
-#: app.py:594
+#: app.py:617
 msgid "This play mode only supports a single file — please select just one."
 msgstr ""
 "Ce mode de lecture ne prend en charge qu'un seul fichier — veuillez n'en "
 "sélectionner qu'un."
 
-#: app.py:600
+#: app.py:623
 #, python-format
 msgid "Card %(id)s assigned."
 msgstr "Carte %(id)s assignée."
 
-#: app.py:680
+#: app.py:731
 #, python-format
 msgid "Checking ARD Sounds for new episodes of card %(id)s."
 msgstr "Recherche de nouveaux épisodes sur ARD Sounds pour la carte %(id)s."
 
-#: app.py:696
+#: app.py:747
 #, python-format
 msgid "Force refresh triggered for card %(id)s."
 msgstr "Actualisation forcée déclenchée pour la carte %(id)s."
 
-#: app.py:703
+#: app.py:754
 #, python-format
 msgid "Force refresh triggered for all %(num)s cards."
 msgstr "Actualisation forcée déclenchée pour les %(num)s cartes."
 
-#: app.py:722
+#: app.py:773
 #, python-format
 msgid ""
 "Secure delete: ESPuino (%(esp_id)s) did not confirm the deletion. Card "
@@ -236,42 +244,42 @@ msgstr ""
 "Suppression sécurisée : l'ESPuino (%(esp_id)s) n'a pas confirmé la "
 "suppression. La carte a été conservée, veuillez réessayer."
 
-#: app.py:738
+#: app.py:789
 #, python-format
 msgid "Card %(id)s deleted (%(mode)s)."
 msgstr "Carte %(id)s supprimée (%(mode)s)."
 
-#: app.py:863
+#: app.py:914
 msgid "Recursion depth must be between 0 and 20."
 msgstr "La profondeur de récursion doit être comprise entre 0 et 20."
 
-#: app.py:874
+#: app.py:925
 msgid "The episode check interval must be between 0 and 10080 minutes (one week)."
 msgstr ""
 "L'intervalle de vérification doit être compris entre 0 et 10080 minutes "
 "(une semaine)."
 
-#: app.py:886
+#: app.py:937
 msgid "The cache limit must be between 0 and 1048576 MB."
 msgstr "La limite du cache doit être comprise entre 0 et 1048576 MB."
 
-#: app.py:889
+#: app.py:940
 msgid "Settings saved."
 msgstr "Paramètres enregistrés."
 
-#: app.py:901
+#: app.py:952
 msgid "Please enter a password."
 msgstr "Veuillez saisir un mot de passe."
 
-#: app.py:903
+#: app.py:954
 msgid "Passwords do not match."
 msgstr "Les mots de passe ne correspondent pas."
 
-#: app.py:906
+#: app.py:957
 msgid "Hub password set."
 msgstr "Mot de passe du hub défini."
 
-#: app.py:914
+#: app.py:965
 msgid "Hub password removed."
 msgstr "Mot de passe du hub supprimé."
 
@@ -400,7 +408,11 @@ msgstr "Type de contenu"
 msgid "Audio files"
 msgstr "Fichiers audio"
 
-#: templates/card_form.html:40 templates/card_form.html:130
+#: templates/card_form.html:33 templates/media.html:80
+msgid "Podcast"
+msgstr "Podcast"
+
+#: templates/card_form.html:40 templates/card_form.html:156
 msgid "Play mode"
 msgstr "Mode de lecture"
 
@@ -462,19 +474,27 @@ msgstr ""
 msgid "Stream URL"
 msgstr "URL du flux"
 
-#: templates/card_form.html:87
+#: templates/card_form.html:87 templates/media.html:68
+msgid "Source"
+msgstr "Source"
+
+#: templates/card_form.html:95
+msgid "Podcast feed (RSS)"
+msgstr "Flux podcast (RSS)"
+
+#: templates/card_form.html:101
 msgid "Search ARD Sounds"
 msgstr "Rechercher sur ARD Sounds"
 
-#: templates/card_form.html:89
+#: templates/card_form.html:103
 msgid "Show name — or paste a link to the show"
 msgstr "Nom de l'émission — ou collez un lien vers l'émission"
 
-#: templates/card_form.html:91
+#: templates/card_form.html:105
 msgid "Search"
 msgstr "Rechercher"
 
-#: templates/card_form.html:94
+#: templates/card_form.html:108
 msgid ""
 "Podcasts and radio shows from ARD Sounds (formerly ARD Audiothek). "
 "MediaHub downloads the chosen episodes itself, so the ESPuino plays them "
@@ -485,19 +505,36 @@ msgstr ""
 "les lise depuis sa carte SD comme n'importe quelle autre assignation — "
 "hors ligne compris."
 
-#: templates/card_form.html:100
+#: templates/card_form.html:114
+msgid "Feed URL"
+msgstr "Adresse du flux"
+
+#: templates/card_form.html:117
+msgid "Load feed"
+msgstr "Charger le flux"
+
+#: templates/card_form.html:120
+msgid ""
+"Any podcast feed works — the address a podcast app would subscribe to. "
+"This source needs no ARD connection at all."
+msgstr ""
+"N'importe quel flux podcast convient — l'adresse qu'une application de "
+"podcast utiliserait pour s'abonner. Cette source ne nécessite aucune "
+"connexion à ARD."
+
+#: templates/card_form.html:126
 msgid "Selected show"
 msgstr "Émission sélectionnée"
 
-#: templates/card_form.html:105
+#: templates/card_form.html:131
 msgid "Which episodes?"
 msgstr "Quels épisodes ?"
 
-#: templates/card_form.html:110
+#: templates/card_form.html:136
 msgid "Always the newest"
 msgstr "Toujours le plus récent"
 
-#: templates/card_form.html:111
+#: templates/card_form.html:137
 msgid ""
 "the hub re-checks the show and fetches new episodes on its own; the card "
 "plays the new one from the next tap onwards."
@@ -505,19 +542,19 @@ msgstr ""
 "le hub revérifie l'émission et récupère les nouveaux épisodes de lui-même"
 " ; la carte joue le nouvel épisode dès la prochaine pose."
 
-#: templates/card_form.html:115
+#: templates/card_form.html:141
 msgid "How many of the newest episodes?"
 msgstr "Combien des épisodes les plus récents ?"
 
-#: templates/card_form.html:121
+#: templates/card_form.html:147
 msgid "Specific episodes"
 msgstr "Épisodes précis"
 
-#: templates/card_form.html:122
+#: templates/card_form.html:148
 msgid "a fixed pick that never changes on its own."
 msgstr "une sélection fixe qui ne change jamais d'elle-même."
 
-#: templates/card_form.html:137
+#: templates/card_form.html:163
 msgid ""
 "Position-remembering modes are handy for long episodes. Note that with "
 "\"always the newest\" a remembered position carries over to the new "
@@ -527,62 +564,70 @@ msgstr ""
 "longs. Attention : avec « toujours le plus récent », une position "
 "mémorisée est reportée sur le nouvel épisode."
 
-#: templates/card_form.html:149
+#: templates/card_form.html:177
 msgid "Searching ARD Sounds…"
 msgstr "Recherche sur ARD Sounds…"
 
-#: templates/card_form.html:150
+#: templates/card_form.html:178
 msgid "No show found. Try a different search term."
 msgstr "Aucune émission trouvée. Essayez un autre terme de recherche."
 
-#: templates/card_form.html:151
+#: templates/card_form.html:179
 msgid "Could not reach ARD Sounds."
 msgstr "ARD Sounds est injoignable."
 
-#: templates/card_form.html:152
+#: templates/card_form.html:180
 #, python-format
 msgid "%(num)s episodes"
 msgstr "%(num)s épisodes"
 
-#: templates/card_form.html:153
+#: templates/card_form.html:181
 #, python-format
 msgid "latest episode: %(date)s"
 msgstr "dernier épisode : %(date)s"
 
-#: templates/card_form.html:154
+#: templates/card_form.html:182
 msgid "Select"
 msgstr "Sélectionner"
 
-#: templates/card_form.html:155
+#: templates/card_form.html:183
 msgid "Choose a different show"
 msgstr "Choisir une autre émission"
 
-#: templates/card_form.html:156
+#: templates/card_form.html:184
 msgid "Loading episodes…"
 msgstr "Chargement des épisodes…"
 
-#: templates/card_form.html:157
+#: templates/card_form.html:185
 msgid "This show currently has no playable episodes."
 msgstr "Cette émission n'a actuellement aucun épisode lisible."
 
-#: templates/card_form.html:158
+#: templates/card_form.html:186
 msgid "Load more episodes"
 msgstr "Charger d'autres épisodes"
 
-#: templates/card_form.html:159
+#: templates/card_form.html:187
+msgid "Loading feed…"
+msgstr "Chargement du flux…"
+
+#: templates/card_form.html:188
+msgid "Could not read this feed."
+msgstr "Ce flux n’a pas pu être lu."
+
+#: templates/card_form.html:189
 msgid "This play mode only supports a single episode."
 msgstr "Ce mode de lecture ne prend en charge qu'un seul épisode."
 
-#: templates/card_form.html:160
+#: templates/card_form.html:190
 msgid "newest"
 msgstr "le plus récent"
 
-#: templates/card_form.html:167 templates/devices.html:35
+#: templates/card_form.html:197 templates/devices.html:35
 #: templates/settings.html:57
 msgid "Save"
 msgstr "Enregistrer"
 
-#: templates/card_form.html:168 templates/cards.html:161
+#: templates/card_form.html:198 templates/cards.html:161
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -962,10 +1007,6 @@ msgstr ""
 msgid "No card references any media yet."
 msgstr "Aucune carte ne référence encore de média."
 
-#: templates/media.html:68
-msgid "Source"
-msgstr "Source"
-
 #: templates/media.html:69
 msgid "Files"
 msgstr "Fichiers"
@@ -1041,8 +1082,8 @@ msgstr ""
 "lui-même, quel que soit ce réglage."
 
 #: templates/settings.html:40
-msgid "ARD Sounds: check for new episodes every"
-msgstr "ARD Sounds : vérifier les nouveaux épisodes toutes les"
+msgid "Podcasts: check for new episodes every"
+msgstr "Podcasts : vérifier les nouveaux épisodes toutes les"
 
 #: templates/settings.html:43
 msgid ""
@@ -1058,8 +1099,8 @@ msgstr ""
 "prochaine pose."
 
 #: templates/settings.html:47
-msgid "ARD Sounds: cache limit"
-msgstr "ARD Sounds : limite du cache"
+msgid "Podcasts: cache limit"
+msgstr "Podcasts : limite du cache"
 
 #: templates/settings.html:51
 #, python-format

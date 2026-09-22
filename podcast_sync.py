@@ -28,6 +28,7 @@ from datetime import datetime, timedelta, timezone
 
 import ard_sounds
 import podcast_cache
+import podcast_feed
 import store as store_lib
 
 # Episodes per card. "Latest N" plus a fixed selection both cap here: every
@@ -101,7 +102,9 @@ def is_due(card, refresh_minutes, now=None):
         return now - last_checked >= timedelta(seconds=ERROR_RETRY_SECONDS)
 
     # A fixed episode selection cannot change behind our back; only "latest"
-    # needs polling, and only if the admin left the interval enabled.
+    # needs polling, and only if the admin left the interval enabled. (An RSS
+    # card's fixed pick *can* scroll out of the feed, but re-checking would
+    # not bring it back — that surfaces on the next sync either way.)
     if (card.get("podcast") or {}).get("selection") != "latest":
         return False
     if not refresh_minutes:
@@ -112,12 +115,55 @@ def is_due(card, refresh_minutes, now=None):
 # --------------------------------------------------------------------------
 # One card
 # --------------------------------------------------------------------------
+SOURCE_ARD = "ard"   # the ARD Sounds catalogue
+SOURCE_RSS = "rss"   # any podcast RSS feed the admin pasted
+
+
+def source_of(podcast):
+    return SOURCE_RSS if (podcast or {}).get("source") == SOURCE_RSS else SOURCE_ARD
+
+
+def cache_folder(podcast):
+    """Which cache subfolder a card's episodes live in — ARD's show id, or a
+    hash of the feed URL. Keeps episode_relpath identical for both sources."""
+    if source_of(podcast) == SOURCE_RSS:
+        return podcast_feed.feed_key(podcast.get("feed_url"))
+    return podcast["show_id"]
+
+
+def _resolve_from_feed(podcast):
+    """Episodes of an RSS card, oldest first."""
+    feed = podcast_feed.fetch_feed(podcast.get("feed_url"))
+    available = feed["episodes"]
+
+    if podcast.get("selection") == "latest":
+        count = max(1, min(int(podcast.get("episode_count") or 1), MAX_EPISODES))
+        return list(reversed(available[:count]))
+
+    wanted = [str(entry["id"]) for entry in (podcast.get("episodes") or [])[:MAX_EPISODES]]
+    by_id = {episode["id"]: episode for episode in available}
+    episodes = [by_id[episode_id] for episode_id in wanted if episode_id in by_id]
+    if not episodes:
+        # Unlike ARD's catalogue, a feed is a rolling window: an episode that
+        # scrolled out of it cannot be resolved at all, and saying so beats a
+        # download error per missing episode.
+        raise podcast_feed.PodcastFeedError(
+            "None of this card's episodes are in the feed any more — feeds only "
+            "list the most recent ones. Pick from the current episodes instead."
+        )
+    episodes.sort(key=lambda ep: (ep.get("publish_date") or "", ep["id"]))
+    return episodes
+
+
 def _resolve_episodes(podcast):
     """The episodes a card's intent currently points at.
 
     In playback order (oldest first, matching the cache's date-sorted
     filenames).
     """
+    if source_of(podcast) == SOURCE_RSS:
+        return _resolve_from_feed(podcast)
+
     show_id = podcast.get("show_id")
     if not show_id:
         raise ard_sounds.ArdSoundsError("This card has no ARD Sounds show configured.")
@@ -174,7 +220,7 @@ def sync_card(store, data_dir, esp_id, card_id):
 
     try:
         episodes = _resolve_episodes(podcast)
-    except ard_sounds.ArdSoundsError as exc:
+    except (ard_sounds.ArdSoundsError, podcast_feed.PodcastFeedError) as exc:
         return fail(str(exc))
     except Exception as exc:  # noqa: BLE001
         # A card must never be left stuck on "syncing" by something we didn't
@@ -188,7 +234,7 @@ def sync_card(store, data_dir, esp_id, card_id):
 
     files, resolved = [], []
     for index, episode in enumerate(episodes):
-        relpath = podcast_cache.episode_relpath(podcast["show_id"], episode)
+        relpath = podcast_cache.episode_relpath(cache_folder(podcast), episode)
         try:
             info = podcast_cache.ensure_episode(
                 data_dir, relpath, episode.get("audio_url"), budget_bytes

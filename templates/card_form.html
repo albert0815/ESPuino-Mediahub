@@ -30,7 +30,7 @@
 			</label>
 			<label class="radio-option">
 				<input type="radio" name="kind" value="podcast" {{ "checked" if card.kind == "podcast" }} onchange="mhToggleKind()">
-				{{ _('ARD Sounds') }}
+				{{ _('Podcast') }}
 			</label>
 		</div>
 	</div>
@@ -84,6 +84,20 @@
 
 	<div id="mh-podcast-section" class="form-section">
 		<div class="form-row">
+			<span class="form-label">{{ _('Source') }}</span>
+			<div class="radio-group">
+				<label class="radio-option">
+					<input type="radio" name="podcast_source" value="ard" id="podcast-source-ard">
+					{{ _('ARD Sounds') }}
+				</label>
+				<label class="radio-option">
+					<input type="radio" name="podcast_source" value="rss" id="podcast-source-rss">
+					{{ _('Podcast feed (RSS)') }}
+				</label>
+			</div>
+		</div>
+
+		<div class="form-row" id="podcast-ard-row">
 			<label for="podcast-query">{{ _('Search ARD Sounds') }}</label>
 			<div class="podcast-search">
 				<input type="search" id="podcast-query" placeholder="{{ _('Show name — or paste a link to the show') }}"
@@ -94,6 +108,18 @@
 				{{ _('Podcasts and radio shows from ARD Sounds (formerly ARD Audiothek). MediaHub downloads the chosen episodes itself, so the ESPuino plays them from its SD card like any other assignment — offline included.') }}
 			</p>
 			<div id="podcast-results" class="podcast-results" hidden></div>
+		</div>
+
+		<div class="form-row" id="podcast-rss-row" hidden>
+			<label for="podcast-feed-url">{{ _('Feed URL') }}</label>
+			<div class="podcast-search">
+				<input type="url" id="podcast-feed-url" placeholder="https://example.com/feed.xml" autocomplete="off">
+				<button class="btn btn-secondary" type="button" id="podcast-feed-btn">{{ _('Load feed') }}</button>
+			</div>
+			<p class="muted">
+				{{ _('Any podcast feed works — the address a podcast app would subscribe to. This source needs no ARD connection at all.') }}
+			</p>
+			<div id="podcast-feed-status" class="podcast-results" hidden></div>
 		</div>
 
 		<div class="form-row" id="podcast-show-row" hidden>
@@ -141,6 +167,8 @@
 		<script type="application/json" id="podcast-config">
 			{{ {
 				"searchUrl": url_for('podcast_search'),
+				"feedUrl": url_for('podcast_feed_preview'),
+				"sources": podcast_sources,
 				"episodesUrlTemplate": url_for('podcast_episodes', show_id='SHOW_ID'),
 				"maxEpisodes": max_podcast_episodes,
 				"singleFileModes": single_file_play_modes,
@@ -156,6 +184,8 @@
 					"loadingEpisodes": _('Loading episodes…'),
 					"noEpisodes": _('This show currently has no playable episodes.'),
 					"loadMore": _('Load more episodes'),
+					"loadingFeed": _('Loading feed…'),
+					"feedFailed": _('Could not read this feed.'),
 					"singleEpisodeOnly": _('This play mode only supports a single episode.'),
 					"newest": _('newest')
 				}

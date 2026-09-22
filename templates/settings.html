@@ -37,14 +37,14 @@
 	</div>
 
 	<div class="form-row">
-		<label for="podcast_refresh_minutes">{{ _('ARD Sounds: check for new episodes every') }}</label>
+		<label for="podcast_refresh_minutes">{{ _('Podcasts: check for new episodes every') }}</label>
 		<input type="number" id="podcast_refresh_minutes" name="podcast_refresh_minutes" min="0" max="10080" style="width: 100px"
 			value="{{ settings.podcast_refresh_minutes }}">
 		<p class="muted">{{ _('Minutes between two checks for cards set to "always the newest" (0 = never check automatically; "Check episodes" on the card list always works). A new episode is downloaded in the background and reaches the ESPuino on the next tap.') }}</p>
 	</div>
 
 	<div class="form-row">
-		<label for="podcast_cache_limit_mb">{{ _('ARD Sounds: cache limit') }}</label>
+		<label for="podcast_cache_limit_mb">{{ _('Podcasts: cache limit') }}</label>
 		<input type="number" id="podcast_cache_limit_mb" name="podcast_cache_limit_mb" min="0" max="1048576" style="width: 120px"
 			value="{{ settings.podcast_cache_limit_mb }}">
 		<p class="muted">

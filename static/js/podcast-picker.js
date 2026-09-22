@@ -13,6 +13,13 @@
 		var labels = config.labels;
 		var singleFileModes = (config.singleFileModes || []).map(String);
 
+		var sourceArd = document.getElementById("podcast-source-ard");
+		var sourceRss = document.getElementById("podcast-source-rss");
+		var ardRow = document.getElementById("podcast-ard-row");
+		var rssRow = document.getElementById("podcast-rss-row");
+		var feedInput = document.getElementById("podcast-feed-url");
+		var feedBtn = document.getElementById("podcast-feed-btn");
+		var feedStatus = document.getElementById("podcast-feed-status");
 		var queryInput = document.getElementById("podcast-query");
 		var searchBtn = document.getElementById("podcast-search-btn");
 		var resultsEl = document.getElementById("podcast-results");
@@ -30,8 +37,9 @@
 
 		// The whole picker state, mirrored into the hidden field on every change.
 		var state = {
-			source: "ard",
+			source: config.sources.ard,
 			show_id: null,
+			feed_url: null,
 			show_urn: null,
 			show_title: "",
 			show_image: null,
@@ -165,6 +173,55 @@
 			});
 		}
 
+		// -- podcast feed --------------------------------------------------
+		function loadFeed() {
+			var url = feedInput.value.trim();
+			if (!url) {
+				return;
+			}
+			setMessage(feedStatus, labels.loadingFeed, false);
+			fetch(config.feedUrl + "?url=" + encodeURIComponent(url))
+				.then(function (response) {
+					return response.json().then(function (data) {
+						if (!response.ok) {
+							throw new Error(data.error || labels.feedFailed);
+						}
+						return data;
+					});
+				})
+				.then(function (data) {
+					feedStatus.hidden = true;
+					state.feed_url = data.feed_url;
+					state.show_id = null;
+					state.show_urn = null;
+					state.show_title = data.title || data.feed_url;
+					state.show_image = data.image_url || null;
+					state.episodes = [];
+					// The feed came back whole, so there is nothing to page
+					// through later — unlike the ARD catalogue.
+					loadedEpisodes = data.episodes || [];
+					episodesTotal = loadedEpisodes.length;
+					renderShow({
+						title: state.show_title,
+						image_url: state.show_image,
+						episode_count: episodesTotal,
+						last_item_added: loadedEpisodes.length ? loadedEpisodes[0].publish_date : null
+					});
+					save();
+					updateVisibility();
+					if (state.selection === "episodes") {
+						renderEpisodes();
+					}
+				})
+				.catch(function (error) {
+					setMessage(feedStatus, error.message || labels.feedFailed, true);
+				});
+		}
+
+		function isRss() {
+			return state.source === config.sources.rss;
+		}
+
 		// -- show selection ----------------------------------------------
 		function selectShow(show) {
 			state.show_id = String(show.id);
@@ -207,14 +264,20 @@
 			change.type = "button";
 			change.addEventListener("click", function () {
 				resultsEl.hidden = true;
-				queryInput.focus();
-				queryInput.select();
+				var input = isRss() ? feedInput : queryInput;
+				input.focus();
+				input.select();
 			});
 			showEl.appendChild(change);
 		}
 
 		// -- episodes ----------------------------------------------------
 		function loadEpisodes(reset) {
+			if (isRss()) {
+				// The whole feed is already in memory.
+				renderEpisodes();
+				return;
+			}
 			if (!state.show_id || episodesLoading) {
 				return;
 			}
@@ -324,7 +387,9 @@
 
 		// -- wiring ------------------------------------------------------
 		function updateVisibility() {
-			var hasShow = !!state.show_id;
+			ardRow.hidden = isRss();
+			rssRow.hidden = !isRss();
+			var hasShow = isRss() ? !!state.feed_url : !!state.show_id;
 			showRow.hidden = !hasShow;
 			selectionRow.hidden = !hasShow;
 			playModeRow.hidden = !hasShow;
@@ -344,6 +409,34 @@
 			save();
 		}
 
+		[sourceArd, sourceRss].forEach(function (radio) {
+			radio.addEventListener("change", function () {
+				state.source = radio.value;
+				// Switching source invalidates whatever the other one picked.
+				state.show_id = null;
+				state.show_urn = null;
+				state.feed_url = null;
+				state.show_title = "";
+				state.show_image = null;
+				state.episodes = [];
+				loadedEpisodes = [];
+				episodesTotal = 0;
+				resultsEl.hidden = true;
+				feedStatus.hidden = true;
+				showEl.innerHTML = "";
+				save();
+				updateVisibility();
+			});
+		});
+
+		feedBtn.addEventListener("click", loadFeed);
+		feedInput.addEventListener("keydown", function (event) {
+			if (event.key === "Enter") {
+				event.preventDefault();
+				loadFeed();
+			}
+		});
+
 		searchBtn.addEventListener("click", search);
 		queryInput.addEventListener("keydown", function (event) {
 			if (event.key === "Enter") {
@@ -359,7 +452,9 @@
 				state.selection = radio.value;
 				save();
 				updateVisibility();
-				if (state.selection === "episodes" && !loadedEpisodes.length) {
+				// A feed arrives complete, so there is nothing to fetch — but the
+				// list still has to be drawn, which loadEpisodes does for both.
+				if (state.selection === "episodes" && (isRss() || !loadedEpisodes.length)) {
 					loadEpisodes(true);
 				}
 			});
@@ -382,10 +477,11 @@
 		});
 
 		// Re-open an existing podcast card with its saved intent in place.
-		if (config.initial && config.initial.show_id) {
+		if (config.initial && (config.initial.show_id || config.initial.feed_url)) {
 			var initial = config.initial;
-			state.source = initial.source || "ard";
-			state.show_id = String(initial.show_id);
+			state.source = initial.source === config.sources.rss ? config.sources.rss : config.sources.ard;
+			state.feed_url = initial.feed_url || null;
+			state.show_id = initial.show_id ? String(initial.show_id) : null;
 			state.show_urn = initial.show_urn || null;
 			state.show_title = initial.show_title || "";
 			state.show_image = initial.show_image || null;
@@ -400,6 +496,9 @@
 				};
 			});
 			countInput.value = state.episode_count;
+			if (state.feed_url) {
+				feedInput.value = state.feed_url;
+			}
 			renderShow({
 				id: state.show_id,
 				title: state.show_title,
@@ -409,6 +508,8 @@
 				loadEpisodes(true);
 			}
 		}
+
+		(state.source === config.sources.rss ? sourceRss : sourceArd).checked = true;
 
 		(state.selection === "episodes" ? episodesRadio : latestRadio).checked = true;
 		updateVisibility();
