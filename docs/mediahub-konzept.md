@@ -1,6 +1,6 @@
 # MediaHub — Detailspezifikation
 
-*Stand: 16. Juli 2026 · Branch `feature-mediahub` · Status: Hub-Server (`mediahub/`) implementiert und getestet; ESPuino-Firmware-Seite noch offen (§15)*
+*Stand: 22. September 2026 · Status: Hub-Server implementiert und getestet. **Die ESPuino-Firmware-Seite ist umgesetzt und ausgeliefert** — `src/MediaHub.cpp`, playMode `MEDIAHUB` (18), seit Firmware 3.0 (07.09.2026); siehe §15/§17.*
 
 ## 1. Worum es geht
 
@@ -376,9 +376,12 @@ Ein Code-Pfad für beide Auslöser: Der **Nutzer** löscht die Karte im ESPuino-
 
 - Der Vordergrund-Download ist blockierend. Wird währenddessen eine **weitere Karte** aufgelegt, wird das mit einem **Fehler quittiert** und ignoriert — der ESPuino ist „busy".
 
-## 15. Offene Punkte / später
+## 15. Umsetzungsstand
 
-- Keine offenen **Konzept**-Fragen mehr. Verbleibende Details (LED-Fehlermuster, Web-UI-Status-Texte, genaue „needs resync"-Retry-Politik) klären sich bei der Umsetzung.
+- **Hub-Server:** implementiert und getestet.
+- **ESPuino-Firmware:** **umgesetzt und ausgeliefert.** `src/MediaHub.cpp` steht im ESPuino-Hauptzweig, playMode `MEDIAHUB` = 18 in `values.h`; enthalten in **Firmware 3.0 vom 07.09.2026** (Changelog-Eintrag vom 01.09.2026). Umgesetzt sind Manifest-Abruf, SHA-256-verifizierter Download auf die SD, Stale-/Re-Sync-Mechanik, Force Refresh, LED-Download-Animation und die SD-Voll-Behandlung — also der Plan aus §17.
+- **Mindestanforderung:** MediaHub-Karten brauchen auf dem Gerät **Firmware 3.0 oder neuer**. Ältere Stände kennen `mediahub://` überhaupt nicht und würden die Adresse als SD-Pfad zu öffnen versuchen.
+- Keine offenen **Konzept**-Fragen.
 
 ## 16. Entscheidungslog
 
@@ -417,7 +420,9 @@ Ein Code-Pfad für beide Auslöser: Der **Nutzer** löscht die Karte im ESPuino-
 
 ## 17. Implementierungsplan ESPuino-Seite (Phasen)
 
-Der Hub (`mediahub/`) ist implementiert und getestet (§15). Für die Firmware-Seite folgt die Umsetzung in Phasen, aufsteigend nach Abhängigkeiten sortiert — jede Phase soll für sich testbar/demofähig sein, bevor die nächste draufkommt.
+> **Hinweis:** Dieser Plan ist **abgearbeitet** — die Firmware-Seite ist seit 3.0 (07.09.2026) ausgeliefert (§15). Die Phasen bleiben als Dokumentation der Reihenfolge stehen, in der das entstanden ist, sind aber keine offene To-do-Liste mehr.
+
+Für die Firmware-Seite erfolgte die Umsetzung in Phasen, aufsteigend nach Abhängigkeiten sortiert — jede Phase sollte für sich testbar/demofähig sein, bevor die nächste draufkam.
 
 ### Phase 0 — Fundament & Dispatch-Weiche
 
