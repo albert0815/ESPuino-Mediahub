@@ -899,7 +899,7 @@ button.podcast-episode {
 	color: var(--brand);
 }
 
-/* --- Podcast cache panel (Media page) --- */
+/* --- Podcast cache panel (Settings page) --- */
 .cache-panel {
 	background: var(--surface);
 	border: 1px solid var(--border);
@@ -910,6 +910,15 @@ button.podcast-episode {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
+}
+
+/* Inside a settings form row the panel sits on an existing card, so it
+   drops the card chrome and just marks itself off from the text above. */
+.form-row .cache-panel {
+	box-shadow: none;
+	margin: 6px 0 0;
+	padding: 14px 16px;
+	background: var(--bg);
 }
 
 .cache-head {

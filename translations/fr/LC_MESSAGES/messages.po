@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ESPuino MediaHub\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-22 11:57+0000\n"
+"POT-Creation-Date: 2026-09-22 14:24+0000\n"
 "PO-Revision-Date: 2026-07-15 09:43+0200\n"
 "Last-Translator: ESPuino MediaHub\n"
 "Language: fr\n"
@@ -88,7 +88,7 @@ msgid_plural "%(num)s files"
 msgstr[0] "%(num)s fichier"
 msgstr[1] "%(num)s fichiers"
 
-#: app.py:260 templates/card_form.html:33 templates/media.html:80
+#: app.py:260 templates/card_form.html:33 templates/media.html:33
 msgid "Podcast"
 msgstr "Podcast"
 
@@ -241,37 +241,37 @@ msgstr ""
 msgid "Card %(id)s deleted (%(mode)s)."
 msgstr "Carte %(id)s supprimée (%(mode)s)."
 
-#: app.py:863
+#: app.py:855
 msgid "Recursion depth must be between 0 and 20."
 msgstr "La profondeur de récursion doit être comprise entre 0 et 20."
 
-#: app.py:874
+#: app.py:866
 msgid "The episode check interval must be between 0 and 10080 minutes (one week)."
 msgstr ""
 "L'intervalle de vérification doit être compris entre 0 et 10080 minutes "
 "(une semaine)."
 
-#: app.py:886
+#: app.py:878
 msgid "The cache limit must be between 0 and 1048576 MB."
 msgstr "La limite du cache doit être comprise entre 0 et 1048576 MB."
 
-#: app.py:889
+#: app.py:881
 msgid "Settings saved."
 msgstr "Paramètres enregistrés."
 
-#: app.py:901
+#: app.py:893
 msgid "Please enter a password."
 msgstr "Veuillez saisir un mot de passe."
 
-#: app.py:903
+#: app.py:895
 msgid "Passwords do not match."
 msgstr "Les mots de passe ne correspondent pas."
 
-#: app.py:906
+#: app.py:898
 msgid "Hub password set."
 msgstr "Mot de passe du hub défini."
 
-#: app.py:914
+#: app.py:906
 msgid "Hub password removed."
 msgstr "Mot de passe du hub supprimé."
 
@@ -380,7 +380,7 @@ msgstr ""
 msgid "For ESPuino: %(device)s"
 msgstr "Pour l'ESPuino : %(device)s"
 
-#: templates/card_form.html:16 templates/cards.html:76 templates/media.html:67
+#: templates/card_form.html:16 templates/cards.html:76 templates/media.html:20
 msgid "Name"
 msgstr "Nom"
 
@@ -545,13 +545,13 @@ msgstr "Ce flux n'a actuellement aucun épisode lisible."
 msgid ""
 "The feed as it is right now — when a new episode appears, the list moves "
 "up. Click one to play just that episode instead."
-msgstr "Le flux tel qu'il est maintenant — quand un nouvel épisode paraît, la liste avance. Cliquez sur un épisode pour ne jouer que celui-là."
-
+msgstr ""
+"Le flux tel qu'il est maintenant — quand un nouvel épisode paraît, la "
+"liste avance. Cliquez sur un épisode pour ne jouer que celui-là."
 
 #: templates/card_form.html:153
 msgid "Pick the episodes this card plays."
 msgstr "Choisissez les épisodes que cette carte joue."
-
 
 #: templates/card_form.html:154
 msgid "Loading feed…"
@@ -570,7 +570,7 @@ msgid "newest"
 msgstr "le plus récent"
 
 #: templates/card_form.html:164 templates/devices.html:35
-#: templates/settings.html:57
+#: templates/settings.html:87
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -669,11 +669,11 @@ msgstr ""
 "Aucune carte connue pour l'instant — elle apparaîtra ici dès qu'elle aura"
 " été présentée à un ESPuino."
 
-#: templates/cards.html:74 templates/media.html:65
+#: templates/cards.html:74 templates/media.html:18
 msgid "Card ID"
 msgstr "ID de la carte"
 
-#: templates/cards.html:75 templates/media.html:66
+#: templates/cards.html:75 templates/media.html:19
 msgid "Device"
 msgstr "Appareil"
 
@@ -847,16 +847,14 @@ msgid "%(num)s pending"
 msgstr "%(num)s en attente"
 
 #: templates/index.html:34
-msgid "Storage usage per card, plus the size of the hub's podcast episode cache."
-msgstr ""
-"Espace utilisé par carte, plus la taille du cache d'épisodes de podcast "
-"du hub."
+msgid "Storage usage per card — what each ESPuino has to download and keep."
+msgstr "Espace utilisé par carte — ce que l'ESPuino concerné doit télécharger et conserver."
+
 
 #: templates/index.html:41
-msgid "Delete behavior (lazy/secure), recursion depth, podcast episode checks."
-msgstr ""
-"Comportement de suppression (lazy/secure), profondeur de récursion, "
-"vérification des épisodes de podcast."
+msgid "Delete behavior (lazy/secure), recursion depth, podcast checks and cache."
+msgstr "Comportement de suppression (lazy/secure), profondeur de récursion, vérifications et cache des podcasts."
+
 
 #: templates/login.html:3 templates/login.html:7 templates/login.html:18
 msgid "Sign in"
@@ -878,110 +876,37 @@ msgstr ""
 "Espace utilisé par carte — c'est ce que l'ESPuino doit télécharger et "
 "conserver sur sa carte SD."
 
-#: templates/media.html:13
-msgid "Podcast cache"
-msgstr "Cache de podcasts"
-
-#: templates/media.html:16
-#, python-format
-msgid "of %(limit)s MB"
-msgstr "sur %(limit)s MB"
-
-#: templates/media.html:22
-#, python-format
-msgid "%(percent)s%% of the cache limit used"
-msgstr "%(percent)s%% de la limite du cache utilisés"
-
-#: templates/media.html:28
-#, python-format
-msgid ""
-"This is the only media MediaHub stores itself: the podcast episodes it "
-"downloaded for your cards (%(num)s in total). Files from your library "
-"always stay where they are and are never copied."
-msgstr ""
-"Ce sont les seuls médias que MediaHub stocke lui-même : les épisodes de "
-"podcast téléchargés pour vos cartes (%(num)s au total). Les fichiers de "
-"votre bibliothèque restent toujours en place et ne sont jamais copiés."
-
-#: templates/media.html:32
-msgid "You never have to clean this up."
-msgstr "Vous n’avez jamais à faire le ménage ici."
-
-#: templates/media.html:33
-msgid ""
-"MediaHub removes an episode as soon as no card needs it any more — when a"
-" card moves on to a newer episode, when its selection changes, and when a"
-" card or device is deleted. It also checks once an hour on its own."
-msgstr ""
-"MediaHub supprime un épisode dès qu’aucune carte n’en a plus besoin — "
-"quand une carte passe à un épisode plus récent, quand sa sélection "
-"change, et quand une carte ou un appareil est supprimé. Il vérifie aussi "
-"de lui-même une fois par heure."
-
-#: templates/media.html:35
-#, python-format
-msgid "Last removal: %(when)s (%(files)s episodes, %(size)s MB freed)."
-msgstr "Dernière suppression : %(when)s (%(files)s épisodes, %(size)s MB libérés)."
-
-#: templates/media.html:40
-#, python-format
-msgid "Last checked: %(when)s — nothing to remove."
-msgstr "Dernière vérification : %(when)s — rien à supprimer."
-
-#: templates/media.html:46
-msgid ""
-"The cache is close to its limit. New episodes are no longer downloaded "
-"once it is reached — raise the limit in Settings, or let your cards keep "
-"fewer episodes. Nothing already downloaded is deleted for this."
-msgstr ""
-"Le cache approche de sa limite. Une fois atteinte, plus aucun épisode "
-"n’est téléchargé — augmentez la limite dans les réglages ou faites garder"
-" moins d’épisodes à vos cartes. Rien de déjà téléchargé n’est supprimé "
-"pour autant."
-
-#: templates/media.html:51
-#, python-format
-msgid ""
-"Free space on the data volume: %(size)s MB. MediaHub always keeps 512 MB "
-"free and stops downloading before it runs out."
-msgstr ""
-"Espace libre sur le volume de données : %(size)s MB. MediaHub garde "
-"toujours 512 MB libres et cesse de télécharger avant de manquer de place."
-
-#: templates/media.html:59
+#: templates/media.html:12
 msgid "No card references any media yet."
 msgstr "Aucune carte ne référence encore de média."
 
-#: templates/media.html:68
+#: templates/media.html:21
 msgid "Source"
 msgstr "Source"
 
-#: templates/media.html:69
+#: templates/media.html:22
 msgid "Files"
 msgstr "Fichiers"
 
-#: templates/media.html:70
+#: templates/media.html:23
 msgid "Size"
 msgstr "Taille"
 
-#: templates/media.html:80
+#: templates/media.html:33
 msgid "Library"
 msgstr "Bibliothèque"
 
-#: templates/media.html:83
+#: templates/media.html:36
 msgid "Manage"
 msgstr "Gérer"
 
 #: templates/settings.html:8
 msgid ""
 "Configure how the hub behaves when a card assignment is deleted, how deep"
-" it looks into subfolders for recursive play modes, and how often it "
-"checks podcast feeds for new episodes."
-msgstr ""
-"Configure le comportement du hub lors de la suppression d'une assignation"
-" de carte, la profondeur d'exploration des sous-dossiers pour les modes "
-"de lecture récursifs, et la fréquence des vérifications de nouveaux "
-"épisodes dans les flux de podcast."
+" it looks into subfolders for recursive play modes, and how it keeps "
+"podcasts up to date."
+msgstr "Configure le comportement du hub lors de la suppression d'une assignation de carte, la profondeur d'exploration des sous-dossiers pour les modes de lecture récursifs, et la façon dont il tient les podcasts à jour."
+
 
 #: templates/settings.html:13
 msgid "Delete behavior"
@@ -1051,31 +976,58 @@ msgstr ""
 msgid "Podcasts: cache limit"
 msgstr "Podcasts : limite du cache"
 
-#: templates/settings.html:51
+#: templates/settings.html:50
 #, python-format
 msgid ""
 "Megabytes the downloaded episodes may occupy on the hub (0 = no limit). "
-"Currently in use: %(used)s MB."
-msgstr ""
-"Mégaoctets que les épisodes téléchargés peuvent occuper sur le hub (0 = "
-"sans limite). Actuellement utilisé : %(used)s MB."
+"Reaching it stops new downloads; nothing already downloaded is deleted."
+msgstr "Mégaoctets que les épisodes téléchargés peuvent occuper sur le hub (0 = illimité). Une fois la limite atteinte, plus aucun nouvel épisode n'est téléchargé ; rien n'est supprimé."
 
-#: templates/settings.html:52
+
+#: templates/settings.html:56
+#, python-format
+msgid "of %(limit)s MB"
+msgstr "sur %(limit)s MB"
+
+#: templates/settings.html:58
+#, python-format
+msgid "%(num)s episodes cached"
+msgstr "%(num)s épisodes en cache"
+
+
+#: templates/settings.html:63
+#, python-format
+msgid "%(percent)s%% of the cache limit used"
+msgstr "%(percent)s%% de la limite du cache utilisés"
+
+#: templates/settings.html:69
+#, python-format
+msgid "Free space on the data volume: %(size)s MB."
+msgstr "Espace libre sur le volume de données : %(size)s Mo."
+
+
+#: templates/settings.html:71
+#, python-format
+msgid "Last removal: %(when)s (%(files)s episodes, %(size)s MB freed)."
+msgstr "Dernière suppression : %(when)s (%(files)s épisodes, %(size)s MB libérés)."
+
+#: templates/settings.html:76
+#, python-format
+msgid "Last checked: %(when)s — nothing to remove."
+msgstr "Dernière vérification : %(when)s — rien à supprimer."
+
+#: templates/settings.html:81
 msgid ""
-"When the limit is reached, no new episodes are downloaded and the "
-"affected card says so — nothing already downloaded is deleted. Episodes "
-"no card needs any more are always removed automatically, limit or not."
-msgstr ""
-"Une fois la limite atteinte, plus aucun épisode n’est téléchargé et la "
-"carte concernée l’indique — rien de déjà téléchargé n’est supprimé. Les "
-"épisodes dont aucune carte n’a plus besoin sont de toute façon toujours "
-"supprimés automatiquement, avec ou sans limite."
+"The cache is close to its limit — raise it above, or let your cards keep "
+"fewer episodes."
+msgstr "Le cache approche de sa limite — augmentez-la ci-dessus, ou laissez vos cartes conserver moins d'épisodes."
 
-#: templates/settings.html:62
+
+#: templates/settings.html:92
 msgid "Hub password"
 msgstr "Mot de passe du hub"
 
-#: templates/settings.html:63
+#: templates/settings.html:93
 msgid ""
 "Optional — protects the web UI below. The ESPuino-facing API stays "
 "reachable either way, since devices can't log in."
@@ -1084,19 +1036,19 @@ msgstr ""
 "ESPuino reste accessible dans tous les cas, puisque les appareils ne "
 "peuvent pas se connecter."
 
-#: templates/settings.html:68
+#: templates/settings.html:98
 msgid "New password"
 msgstr "Nouveau mot de passe"
 
-#: templates/settings.html:72
+#: templates/settings.html:102
 msgid "Confirm new password"
 msgstr "Confirmer le nouveau mot de passe"
 
-#: templates/settings.html:76
+#: templates/settings.html:106
 msgid "Set password"
 msgstr "Définir le mot de passe"
 
-#: templates/settings.html:78
+#: templates/settings.html:108
 msgid "Remove password"
 msgstr "Supprimer le mot de passe"
 
@@ -1152,4 +1104,99 @@ msgstr "Supprimer le mot de passe"
 
 #~ msgid "Load more episodes"
 #~ msgstr "Charger d'autres épisodes"
+
+#~ msgid ""
+#~ "Storage usage per card, plus the "
+#~ "size of the hub's podcast episode "
+#~ "cache."
+#~ msgstr ""
+#~ "Espace utilisé par carte, plus la "
+#~ "taille du cache d'épisodes de podcast"
+#~ " du hub."
+
+#~ msgid "Podcast cache"
+#~ msgstr "Cache de podcasts"
+
+#~ msgid ""
+#~ "This is the only media MediaHub "
+#~ "stores itself: the podcast episodes it"
+#~ " downloaded for your cards (%(num)s "
+#~ "in total). Files from your library "
+#~ "always stay where they are and are"
+#~ " never copied."
+#~ msgstr ""
+#~ "Ce sont les seuls médias que "
+#~ "MediaHub stocke lui-même : les "
+#~ "épisodes de podcast téléchargés pour vos"
+#~ " cartes (%(num)s au total). Les "
+#~ "fichiers de votre bibliothèque restent "
+#~ "toujours en place et ne sont "
+#~ "jamais copiés."
+
+#~ msgid "You never have to clean this up."
+#~ msgstr "Vous n’avez jamais à faire le ménage ici."
+
+#~ msgid ""
+#~ "MediaHub removes an episode as soon "
+#~ "as no card needs it any more "
+#~ "— when a card moves on to a"
+#~ " newer episode, when its selection "
+#~ "changes, and when a card or device"
+#~ " is deleted. It also checks once "
+#~ "an hour on its own."
+#~ msgstr ""
+#~ "MediaHub supprime un épisode dès "
+#~ "qu’aucune carte n’en a plus besoin "
+#~ "— quand une carte passe à un "
+#~ "épisode plus récent, quand sa sélection"
+#~ " change, et quand une carte ou "
+#~ "un appareil est supprimé. Il vérifie "
+#~ "aussi de lui-même une fois par "
+#~ "heure."
+
+#~ msgid ""
+#~ "The cache is close to its limit."
+#~ " New episodes are no longer "
+#~ "downloaded once it is reached — "
+#~ "raise the limit in Settings, or "
+#~ "let your cards keep fewer episodes. "
+#~ "Nothing already downloaded is deleted "
+#~ "for this."
+#~ msgstr ""
+#~ "Le cache approche de sa limite. "
+#~ "Une fois atteinte, plus aucun épisode"
+#~ " n’est téléchargé — augmentez la "
+#~ "limite dans les réglages ou faites "
+#~ "garder moins d’épisodes à vos cartes."
+#~ " Rien de déjà téléchargé n’est "
+#~ "supprimé pour autant."
+
+#~ msgid ""
+#~ "Free space on the data volume: "
+#~ "%(size)s MB. MediaHub always keeps 512"
+#~ " MB free and stops downloading before"
+#~ " it runs out."
+#~ msgstr ""
+#~ "Espace libre sur le volume de "
+#~ "données : %(size)s MB. MediaHub garde"
+#~ " toujours 512 MB libres et cesse "
+#~ "de télécharger avant de manquer de "
+#~ "place."
+
+#~ msgid ""
+#~ "When the limit is reached, no new"
+#~ " episodes are downloaded and the "
+#~ "affected card says so — nothing "
+#~ "already downloaded is deleted. Episodes "
+#~ "no card needs any more are always"
+#~ " removed automatically, limit or not."
+#~ msgstr ""
+#~ "Une fois la limite atteinte, plus "
+#~ "aucun épisode n’est téléchargé et la "
+#~ "carte concernée l’indique — rien de "
+#~ "déjà téléchargé n’est supprimé. Les "
+#~ "épisodes dont aucune carte n’a plus "
+#~ "besoin sont de toute façon toujours "
+#~ "supprimés automatiquement, avec ou sans "
+#~ "limite."
 

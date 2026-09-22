@@ -775,24 +775,16 @@ def media_overview():
         if c["kind"] in ("files", "podcast") and c.get("files")
     ]
     rows.sort(key=lambda row: row[1], reverse=True)
-    return render_template(
-        "media.html",
-        rows=rows,
-        # Library bytes live in the admin's own (read-only) library; podcast
-        # bytes are the only media MediaHub itself stores, so the cache gets
-        # its own panel — how much it holds, what its budget is, and proof
-        # that the automatic cleanup is running.
-        cache=_podcast_cache_panel(),
-    )
+    return render_template("media.html", rows=rows)
 
 
 def _podcast_cache_panel():
-    """Everything the Media page says about the episode cache.
+    """What the Settings page shows next to the cache limit.
 
     Deliberately more than a number: the cache is the only storage MediaHub
     owns, it fills itself in the background, and it empties itself again —
-    so the page has to make both halves of that visible, otherwise the only
-    honest thing an admin could do is go and look in the data volume.
+    so the admin setting the limit has to see both halves of that, otherwise
+    the only honest thing they could do is go and look in the data volume.
     """
     settings = store.get_settings()
     state = store.get_podcast_cache_state()

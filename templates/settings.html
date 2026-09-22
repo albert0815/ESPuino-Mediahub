@@ -5,7 +5,7 @@
 {% block content %}
 <section class="page-head">
 	<h1>{{ _('Settings') }}</h1>
-	<p class="muted">{{ _('Configure how the hub behaves when a card assignment is deleted, how deep it looks into subfolders for recursive play modes, and how often it checks podcast feeds for new episodes.') }}</p>
+	<p class="muted">{{ _('Configure how the hub behaves when a card assignment is deleted, how deep it looks into subfolders for recursive play modes, and how it keeps podcasts up to date.') }}</p>
 </section>
 
 <form class="form-card" method="post">
@@ -47,10 +47,40 @@
 		<label for="podcast_cache_limit_mb">{{ _('Podcasts: cache limit') }}</label>
 		<input type="number" id="podcast_cache_limit_mb" name="podcast_cache_limit_mb" min="0" max="1048576" style="width: 120px"
 			value="{{ settings.podcast_cache_limit_mb }}">
-		<p class="muted">
-			{{ _('Megabytes the downloaded episodes may occupy on the hub (0 = no limit). Currently in use: %(used)s MB.', used=(cache.used / 1048576) | round(1)) }}
-			{{ _('When the limit is reached, no new episodes are downloaded and the affected card says so — nothing already downloaded is deleted. Episodes no card needs any more are always removed automatically, limit or not.') }}
-		</p>
+		<p class="muted">{{ _('Megabytes the downloaded episodes may occupy on the hub (0 = no limit). Reaching it stops new downloads; nothing already downloaded is deleted.') }}</p>
+
+		<div class="cache-panel">
+			<div class="cache-head">
+				<span class="cache-size{{ ' cache-size-warn' if cache.near_limit }}">
+					{{ (cache.used / 1048576) | round(1) }}&nbsp;MB
+					{% if cache.limit %}<span class="muted">{{ _('of %(limit)s MB', limit=(cache.limit / 1048576) | round(0) | int) }}</span>{% endif %}
+				</span>
+				<span class="muted">{{ _('%(num)s episodes cached', num=cache.episode_slots) }}</span>
+			</div>
+
+			{% if cache.limit %}
+			<div class="cache-bar" role="img"
+				aria-label="{{ _('%(percent)s%% of the cache limit used', percent=cache.percent) }}">
+				{% if cache.used %}<div class="cache-bar-fill{{ ' cache-bar-warn' if cache.near_limit }}" style="width: {{ [cache.percent, 100] | min }}%"></div>{% endif %}
+			</div>
+			{% endif %}
+
+			<p class="muted">
+				{% if cache.free is not none %}{{ _('Free space on the data volume: %(size)s MB.', size=(cache.free / 1048576) | round(0) | int) }}{% endif %}
+				{% if cache.last_removal_at %}
+					{{ _('Last removal: %(when)s (%(files)s episodes, %(size)s MB freed).',
+						when=cache.last_removal_at | shortdt,
+						files=cache.last_removed_files,
+						size=(cache.last_removed_bytes / 1048576) | round(1)) }}
+				{% elif cache.last_cleanup_at %}
+					{{ _('Last checked: %(when)s — nothing to remove.', when=cache.last_cleanup_at | shortdt) }}
+				{% endif %}
+			</p>
+
+			{% if cache.near_limit %}
+			<p class="cache-warn">{{ _('The cache is close to its limit — raise it above, or let your cards keep fewer episodes.') }}</p>
+			{% endif %}
+		</div>
 	</div>
 
 	<div class="form-actions">
