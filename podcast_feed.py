@@ -107,6 +107,14 @@ def _item_to_episode(item):
     if not audio_url:
         return None
 
+    # `length` is the enclosure's size in bytes. Feeds are not careful with
+    # it (missing, empty, or a float), and it is only ever shown to the
+    # admin, so anything unusable becomes 0 and is left out of the UI.
+    try:
+        size = int(enclosure.get("length") or 0)
+    except ValueError:
+        size = 0
+
     guid = (item.findtext("guid") or "").strip()
     return {
         "id": _episode_id(guid, audio_url),
@@ -116,6 +124,7 @@ def _item_to_episode(item):
         "duration": _parse_duration(item.findtext(f"{{{ITUNES_NS}}}duration")),
         "audio_url": audio_url,
         "mime_type": enclosure.get("type"),
+        "size": max(0, size),
     }
 
 

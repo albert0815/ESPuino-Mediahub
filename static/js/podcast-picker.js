@@ -78,6 +78,18 @@
 			return minutes + " min";
 		}
 
+		// Feeds state the enclosure size, and a 90 MB episode is a very
+		// different proposition for an ESPuino than a 5 MB one — worth seeing
+		// before a card is committed to it. Sources that don't report a size
+		// simply leave the field out.
+		function formatSize(bytes) {
+			if (!bytes) {
+				return "";
+			}
+			var mb = bytes / 1048576;
+			return (mb >= 10 ? Math.round(mb) : Math.round(mb * 10) / 10) + " MB";
+		}
+
 		// "25 episodes · latest episode: 21/09/2026" — the date is what tells
 		// you at a glance whether a podcast is still running or was last
 		// touched years ago, which the episode count alone does not.
@@ -248,7 +260,11 @@
 
 			var main = text("span", "podcast-episode-main");
 			main.appendChild(text("span", "podcast-episode-title", episode.title));
-			var meta = [formatDate(episode.publish_date), formatDuration(episode.duration)]
+			var meta = [
+				formatDate(episode.publish_date),
+				formatDuration(episode.duration),
+				formatSize(episode.size)
+			]
 				.filter(Boolean)
 				.join(" · ");
 			main.appendChild(text("span", "podcast-meta", meta));
