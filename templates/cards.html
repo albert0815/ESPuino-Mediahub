@@ -115,7 +115,7 @@
 						{% if card.kind == "podcast" %}
 						<form method="post" action="{{ url_for('podcast_refresh_card', esp_id=card.esp_id, card_id=card.card_id) }}">
 							<button class="btn btn-small btn-secondary" type="submit"
-								title="{{ _('Check the feed for new episodes right now instead of waiting for the next scheduled check.') }}">{{ _('Check episodes') }}</button>
+								title="{{ _('Look for new episodes right now instead of waiting for the next scheduled check.') }}">{{ _('Check episodes') }}</button>
 						</form>
 						{% endif %}
 						<button type="button" class="btn btn-small btn-secondary mh-manifest-btn"

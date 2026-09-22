@@ -207,15 +207,15 @@ Gemischte `LOCAL_M3U`-Listen (SD-Dateien und Webstreams gemischt) unterstützt M
 
 ### 7.3 Podcast-Variante
 
-Neben „Audiodateien“ und „Webradio“ gibt es beim Zuweisen einer Karte einen **dritten Inhaltstyp: Podcast**. Der Admin fügt die **Feed-Adresse** eines Podcasts ein — dieselbe, die eine Podcast-App abonnieren würde — und wählt **„immer die neueste Folge(n)“** oder **konkrete Episoden**. Inspiriert von [espuino-podcast-server](https://github.com/jpgorganizer/espuino-podcast-server), aber in die Hub-Architektur eingepasst statt als zweiter Dienst daneben.
+Neben „Audiodateien“ und „Webradio“ gibt es beim Zuweisen einer Karte einen **dritten Inhaltstyp: Podcast**. Der Admin fügt die **Feed-Adresse** eines Podcasts ein — dieselbe, die eine Podcast-App abonnieren würde — oder sucht die Sendung im ARD-Sounds-Katalog (§7.4), und wählt **„immer die neueste Folge(n)“** oder **konkrete Episoden**. Inspiriert von [espuino-podcast-server](https://github.com/jpgorganizer/espuino-podcast-server), aber in die Hub-Architektur eingepasst statt als zweiter Dienst daneben.
 
 **Der ESPuino lernt dabei nichts Neues.** Das Manifest einer Podcast-Karte ist ein ganz normales Datei-Manifest (§7.1); einziger Unterschied ist die `filesBaseUrl`, die auf den Podcast-Cache des Hubs (`/podcast-media/`) statt auf die Medienbibliothek zeigt. Dass der Hub die Folgen dafür selbst herunterlädt, statt dem ESPuino die Episoden-URL zu geben, ist der Kern der Entscheidung — Begründung und verworfene Alternative stehen in #31.
 
-**Die Karte speichert Absicht, nicht Dateien** — Feed-Adresse, `selection` = `latest` | `episodes`, Anzahl bzw. Episoden-IDs, playMode. Die Dateiliste entsteht erst beim Sync, und der läuft ausschließlich im Hintergrund (`podcast_sync.py`), **niemals** im Manifest-Request (§3.2):
+**Die Karte speichert Absicht, nicht Dateien** — Quelle (`rss` | `ard`), Feed-Adresse bzw. Sendungs-ID, `selection` = `latest` | `episodes`, Anzahl bzw. Episoden-IDs, playMode. Die Dateiliste entsteht erst beim Sync, und der läuft ausschließlich im Hintergrund (`podcast_sync.py`), **niemals** im Manifest-Request (§3.2):
 
 ```text
 Absicht speichern  →  Zustand "pending"
-Worker: Feed abrufen (welche Folgen sind das gerade?)
+Worker: Quelle abfragen (welche Folgen sind das gerade?)
         → je Folge: Cache-Treffer oder Download (.tmp → SHA → rename, wie §13)
         → Dateiliste + Metadaten an der Karte speichern, Zustand "ready"
 Fehler → Zustand "error" + Meldung im Karten-UI; Retry nach 10 Minuten
@@ -225,7 +225,7 @@ Fehler → Zustand "error" + Meldung im Karten-UI; Retry nach 10 Minuten
 - Liegt noch keine Datei vor, antwortet der Manifest-Endpunkt **`not_ready`/`preparing` (404)** statt mit einem leeren Manifest. Eine neue Folge greift wie jede Inhaltsänderung beim nächsten Auflegen (§9).
 - **`latest` wird periodisch nachgesehen** (Intervall konfigurierbar, Default 6 h, `0` = nie; zusätzlich ein Button je Karte), maximal **20 Folgen pro Karte**. Abspielmodi sind eine kuratierte Teilmenge der Datei-Modi, Einzeltitel-Modi serverseitig auf eine Folge begrenzt.
 
-**Der Cache liegt unter `DATA_DIR/podcasts/<podcastId>/<datum>_<episodenId>.<ext>`** — nicht unter `/media`, das ist read-only die Bibliothek des Admins (§5.4). Das führende Datum macht die Dateisortierung = chronologische Reihenfolge; Folgen werden zwischen Karten geteilt.
+**Der Cache liegt unter `DATA_DIR/podcasts/<podcastId>/<datum>_<episodenId>.<ext>`** — `<podcastId>` ist ein Hash der Feed-Adresse bzw. die ARD-Sendungs-ID — nicht unter `/media`, das ist read-only die Bibliothek des Admins (§5.4). Das führende Datum macht die Dateisortierung = chronologische Reihenfolge; Folgen werden zwischen Karten geteilt.
 
 - **Aufräumen automatisch — der Nutzer räumt nie selbst auf.** Nicht mehr referenzierte Folgen fallen nach jedem Sync, bei jedem Karten-/Geräte-Löschen und stündlich weg (auf dem ESPuino: §10/§13.1).
 - **Zwei Bremsen gegen Vollaufen**, beide *vor* dem ersten geschriebenen Byte: eine Platzreserve auf dem Daten-Volume und ein konfigurierbares Cache-Limit. Greift eine davon, werden **keine neuen** Folgen geladen und **nichts gelöscht** — stilles Verdrängen würde heimlich entfernen, was der Admin bewusst konfiguriert hat. Die Karte sagt stattdessen, was zu tun ist.
@@ -237,7 +237,15 @@ Fehler → Zustand "error" + Meldung im Karten-UI; Retry nach 10 Minuten
 - **Ein Feed ist ein gleitendes Fenster.** Eine fest gewählte Folge, die herausgerutscht ist, lässt sich nicht mehr auflösen; die Karte sagt das in einem Satz statt in einem Download-Fehler je Folge.
 - **Die Feed-Adresse kommt vom Admin.** Der Abruf ist auf `http(s)` und in der Größe begrenzt; welchen Feed sein eigener (angemeldeter) Admin abonnieren darf, schreibt der Hub darüber hinaus nicht vor.
 - **Hörbuch-Modus + „immer die neueste“:** Die Abspielposition liegt an der Karte (§8.1), nicht an der Folge — wechselt die Folge, wandert die alte Position mit. Ein Einzeltitel-Modus ist dafür meist die bessere Wahl.
-- **Nur RSS, kein Katalog.** Ein Katalog als zweite Quelle wäre über ein `source`-Feld an der Karte nachrüstbar.
+- **Zwei Quellen, sonst nichts.** Neben gewöhnlichen Feeds gibt es den ARD-Sounds-Katalog (§7.4); weitere wären über dasselbe `source`-Feld nachrüstbar.
+
+### 7.4 Zweite Quelle: der ARD-Sounds-Katalog
+
+Neben der Feed-Adresse (§7.3) kann der Admin eine Sendung auch direkt im **ARD-Sounds-Katalog** (ehemals ARD Audiothek) suchen — praktisch für die vielen ARD-Sendungen, deren Feed-Adresse man sonst erst finden müsste. Alles dahinter ist identisch: dieselbe Auswahl, derselbe Hintergrund-Sync, derselbe Cache, dasselbe Datei-Manifest. Unterschiedlich ist nur, **woher die Episodenliste kommt**, und der Cache-Unterordner (ARD-Sendungs-ID statt Hash der Feed-Adresse).
+
+- **ARD hat keine offiziell dokumentierte, stabile API.** Der Hub spricht `api.ardaudiothek.de/graphql` — denselben Endpunkt, den die ARD-Sounds-Website selbst nutzt. Das kann jederzeit brechen; alles fällt daher „soft“ aus (lesbare Meldung an der Karte, Retry, nie eine Exception in einem Request). Anders als beim Scraping-Weg von espuino-podcast-server reicht **eine** GraphQL-Abfrage pro Schritt — kein HTML-Parsing, keine Regexe auf fremdem Markup. Genau deshalb ist RSS (§7.3) die robustere der beiden Quellen und die Voreinstellung im Formular.
+- **Nutzungsbedingungen.** ARD Sounds darf „ausschließlich zu privaten, nichtkommerziellen Zwecken“ genutzt werden; für „Vervielfältigung … oder Speicherung“ verlangen die Bedingungen zudem eine schriftliche Zustimmung. Genau das tut ein Hub, der Folgen zwischenspeichert — dem steht die Privatkopie-Schranke (§ 53 UrhG) gegenüber, die eine einseitige AGB-Klausel Privatnutzern nicht einfach nehmen kann. Die Netz-Warnung in §7.3 verkleinert den Fußabdruck, löst die Frage aber nicht auf. Wer den Hub öffentlich betreibt oder kommerziell nutzt, ist eindeutig außerhalb.
+- **Katalog statt gleitendem Fenster.** Anders als ein Feed listet der Katalog auch ältere Folgen; die Episodenliste im Formular wird deshalb seitenweise nachgeladen. Audio-URLs werden bei jedem Sync neu aufgelöst, da ARDs CDN-Pfade rotieren.
 
 ## 8. playMode: `MEDIAHUB`-Marker im NVS, echter Modus aus dem Manifest
 
@@ -450,7 +458,7 @@ Ein Code-Pfad für beide Auslöser: Der **Nutzer** löscht die Karte im ESPuino-
 | 28 | Geräte-Alias-Liste im Hub (frei vergebbarer Name je `espId`, z. B. „Kinderzimmer") — reine Anzeige-Ergonomie, da die vom ESPuino gesendete `espId` (MAC/Hostname) für Menschen unhandlich ist. Gerät im Hub-UI löschbar; bestehende Zuweisungen dieses Geräts werden dabei nach Bestätigung mit gelöscht (nur der Hub-Datensatz, nie ESPuino/NVS). |
 | 29 | **Play-Position-Persistenz (§8.1):** NVS-Format korrigiert auf die tatsächlichen vier Felder `path#lastPlayPos#playMode#trackLastPlayed`. `AudioPlayer_NvsRfidWriteWrapper()` muss bei einem `mediahub://`-Pfad das `playMode`-Feld beim Zurückschreiben immer auf `MEDIAHUB` erzwingen (statt des echten, gerade abgespielten Modus) — sonst überschreibt der erste Pause-/Trackwechsel-Save den Marker und die Karte wird beim nächsten Auflegen nicht mehr als MediaHub-Karte erkannt. `AudioPlayer_SetPlaylist()` wird beim Abspielen mit dem echten Manifest-`playMode` plus den aus dem NVS gelesenen `lastPlayPos`/`trackLastPlayed` aufgerufen — dadurch greifen `saveLastPlayPosition` und der Shutdown-Flush unverändert, ohne dass AudioPlayer.cpp/System.cpp MediaHub kennen müssen. |
 | 30 | **Downloadpuffer-Lebensdauer an den TLS-Handshake gekoppelt (§13):** Die beiden 16-KB-Doppelpuffer werden pro Datei erst nach erfolgreichem Handshake alloziert (bevorzugt intern, PSRAM nur als Fallback) und nach dem Transfer sofort wieder freigegeben — dauerhafte interne Allokation hätte dem https-Handshake der jeweils nächsten Datei den nötigen zusammenhängenden Heap weggenommen (`HTTPC_ERROR_CONNECTION_REFUSED`, auf echter Hardware reproduziert). |
-| 31 | **Podcasts als dritter Inhaltstyp (§7.3):** Der Hub lädt die gewählten Folgen selbst herunter und liefert ein gewöhnliches Datei-Manifest (nur andere `filesBaseUrl`) — daher **keine Firmware-Änderung, kein neues Manifest-Feld**, und die Karte bleibt offline abspielbar. Verworfen: die Redirect-/Stream-Variante (ESPuino streamt die Episoden-URL) — sie kann `size`/`sha256` nicht liefern, bräuchte HTTPS-Streaming auf dem ESP32 und wäre offline unbrauchbar. Auflösen und Herunterladen passiert in einem Hintergrund-Worker (genau einer pro Container, `flock`-gewählt), nie im Manifest-Request; neue Folgen greifen — wie jede andere Inhaltsänderung — beim nächsten Auflegen. |
+| 31 | **Podcasts als dritter Inhaltstyp (§7.3), ARD Sounds als zweite Quelle (§7.4):** Der Hub lädt die gewählten Folgen selbst herunter und liefert ein gewöhnliches Datei-Manifest (nur andere `filesBaseUrl`) — daher **keine Firmware-Änderung, kein neues Manifest-Feld**, und die Karte bleibt offline abspielbar. Verworfen: die Redirect-/Stream-Variante (ESPuino streamt die Episoden-URL) — sie kann `size`/`sha256` nicht liefern, bräuchte HTTPS-Streaming auf dem ESP32 und wäre offline unbrauchbar. Auflösen und Herunterladen passiert in einem Hintergrund-Worker (genau einer pro Container, `flock`-gewählt), nie im Manifest-Request; neue Folgen greifen — wie jede andere Inhaltsänderung — beim nächsten Auflegen. |
 
 ## 17. Implementierungsplan ESPuino-Seite (Phasen)
 
