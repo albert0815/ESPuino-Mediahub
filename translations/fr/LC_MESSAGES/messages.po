@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ESPuino MediaHub\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-22 05:18+0000\n"
+"POT-Creation-Date: 2026-09-22 08:00+0000\n"
 "PO-Revision-Date: 2026-07-15 09:43+0200\n"
 "Last-Translator: ESPuino MediaHub\n"
 "Language: fr\n"
@@ -99,28 +99,20 @@ msgid_plural "%(num)s newest episodes"
 msgstr[0] "épisode le plus récent"
 msgstr[1] "%(num)s épisodes les plus récents"
 
-#: app.py:277
-msgid "up to date · via podcast feed"
-msgstr "à jour · via le flux podcast"
-
-#: app.py:279
-msgid "up to date · via ARD Sounds API"
-msgstr "à jour · via l’API ARD Sounds"
-
-#: app.py:280
+#: app.py:274
 msgid "up to date"
 msgstr "à jour"
 
-#: app.py:286
+#: app.py:280
 #, python-format
 msgid "downloading %(done)s/%(total)s"
 msgstr "téléchargement %(done)s/%(total)s"
 
-#: app.py:291
+#: app.py:285
 msgid "checking ARD Sounds…"
 msgstr "interrogation d’ARD Sounds…"
 
-#: app.py:300
+#: app.py:294
 #, python-format
 msgid ""
 "Cache limit of %(limit)s MB reached — no new episodes are downloaded. "
@@ -129,7 +121,7 @@ msgstr ""
 "Limite du cache de %(limit)s MB atteinte — aucun nouvel épisode n’est "
 "téléchargé. Augmentez-la dans les réglages ou gardez moins d’épisodes."
 
-#: app.py:309
+#: app.py:303
 msgid ""
 "Not enough free disk space on the hub — MediaHub stopped before filling "
 "it up."
@@ -137,66 +129,66 @@ msgstr ""
 "Espace disque insuffisant sur le hub — MediaHub s’est arrêté avant de le "
 "remplir."
 
-#: app.py:313
+#: app.py:307
 msgid "sync failed"
 msgstr "échec de la synchronisation"
 
-#: app.py:314
+#: app.py:308
 msgid "waiting for download"
 msgstr "en attente du téléchargement"
 
-#: app.py:375
+#: app.py:369
 msgid "Card ID must be exactly 12 digits."
 msgstr "L'ID de la carte doit comporter exactement 12 chiffres."
 
-#: app.py:379
+#: app.py:373
 msgid "Please choose a known ESPuino."
 msgstr "Veuillez choisir un ESPuino connu."
 
-#: app.py:388 app.py:408
+#: app.py:382 app.py:402
 #, python-format
 msgid "Card %(id)s is already assigned on this ESPuino — opening it for editing."
 msgstr ""
 "La carte %(id)s est déjà assignée sur cet ESPuino — ouverture pour "
 "modification."
 
-#: app.py:402
+#: app.py:396
 msgid "Please choose a different, known ESPuino."
 msgstr "Veuillez choisir un autre ESPuino connu."
 
-#: app.py:431
+#: app.py:425
 #, python-format
 msgid "Card %(id)s duplicated to %(esp_id)s."
 msgstr "Carte %(id)s dupliquée sur %(esp_id)s."
 
-#: app.py:450
+#: app.py:444
 msgid "Please pick a show from ARD Sounds first."
 msgstr "Veuillez d’abord choisir une émission sur ARD Sounds."
 
-#: app.py:472
+#: app.py:475
 msgid "Please select at least one episode."
 msgstr "Veuillez sélectionner au moins un épisode."
 
-#: app.py:485 app.py:559
+#: app.py:488 app.py:562
 msgid "Please choose a valid play mode."
 msgstr "Veuillez choisir un mode de lecture valide."
 
-#: app.py:491
+#: app.py:494
 msgid "This play mode only supports a single episode — please select just one."
 msgstr ""
 "Ce mode de lecture ne prend en charge qu'un seul épisode — veuillez n'en "
 "sélectionner qu'un."
 
-#: app.py:533
+#: app.py:536
 msgid "A stream URL is required for webradio."
 msgstr "Une URL de flux est requise pour la webradio."
 
-#: app.py:549
+#: app.py:552
 #, python-format
 msgid "Card %(id)s assigned — downloading the episodes now."
 msgstr "Carte %(id)s assignée — les épisodes sont en cours de téléchargement."
 
-#: app.py:578
+#: app.py:581
 #, python-format
 msgid ""
 "Some selected files could not be used (missing, or not readable by the "
@@ -205,37 +197,37 @@ msgstr ""
 "Certains fichiers sélectionnés n'ont pas pu être utilisés (absents ou non"
 " lisibles par l'utilisateur du conteneur) et ont été ignorés : %(paths)s"
 
-#: app.py:587
+#: app.py:590
 msgid "At least one audio file is required."
 msgstr "Au moins un fichier audio est requis."
 
-#: app.py:591
+#: app.py:594
 msgid "This play mode only supports a single file — please select just one."
 msgstr ""
 "Ce mode de lecture ne prend en charge qu'un seul fichier — veuillez n'en "
 "sélectionner qu'un."
 
-#: app.py:597
+#: app.py:600
 #, python-format
 msgid "Card %(id)s assigned."
 msgstr "Carte %(id)s assignée."
 
-#: app.py:677
+#: app.py:680
 #, python-format
 msgid "Checking ARD Sounds for new episodes of card %(id)s."
 msgstr "Recherche de nouveaux épisodes sur ARD Sounds pour la carte %(id)s."
 
-#: app.py:693
+#: app.py:696
 #, python-format
 msgid "Force refresh triggered for card %(id)s."
 msgstr "Actualisation forcée déclenchée pour la carte %(id)s."
 
-#: app.py:700
+#: app.py:703
 #, python-format
 msgid "Force refresh triggered for all %(num)s cards."
 msgstr "Actualisation forcée déclenchée pour les %(num)s cartes."
 
-#: app.py:719
+#: app.py:722
 #, python-format
 msgid ""
 "Secure delete: ESPuino (%(esp_id)s) did not confirm the deletion. Card "
@@ -244,42 +236,42 @@ msgstr ""
 "Suppression sécurisée : l'ESPuino (%(esp_id)s) n'a pas confirmé la "
 "suppression. La carte a été conservée, veuillez réessayer."
 
-#: app.py:735
+#: app.py:738
 #, python-format
 msgid "Card %(id)s deleted (%(mode)s)."
 msgstr "Carte %(id)s supprimée (%(mode)s)."
 
-#: app.py:860
+#: app.py:863
 msgid "Recursion depth must be between 0 and 20."
 msgstr "La profondeur de récursion doit être comprise entre 0 et 20."
 
-#: app.py:871
+#: app.py:874
 msgid "The episode check interval must be between 0 and 10080 minutes (one week)."
 msgstr ""
 "L'intervalle de vérification doit être compris entre 0 et 10080 minutes "
 "(une semaine)."
 
-#: app.py:883
+#: app.py:886
 msgid "The cache limit must be between 0 and 1048576 MB."
 msgstr "La limite du cache doit être comprise entre 0 et 1048576 MB."
 
-#: app.py:886
+#: app.py:889
 msgid "Settings saved."
 msgstr "Paramètres enregistrés."
 
-#: app.py:898
+#: app.py:901
 msgid "Please enter a password."
 msgstr "Veuillez saisir un mot de passe."
 
-#: app.py:900
+#: app.py:903
 msgid "Passwords do not match."
 msgstr "Les mots de passe ne correspondent pas."
 
-#: app.py:903
+#: app.py:906
 msgid "Hub password set."
 msgstr "Mot de passe du hub défini."
 
-#: app.py:911
+#: app.py:914
 msgid "Hub password removed."
 msgstr "Mot de passe du hub supprimé."
 
