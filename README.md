@@ -65,7 +65,7 @@ reuses the existing image and keeps running the previous version.
 
 - **Devices** (`/devices`): ESPuinos that have contacted the hub (IP, last seen, last card).
 - **Cards & Assignments** (`/cards`): overview, assign/edit — three content types per card: files/folders from the mounted library via an inline tree browser (`static/js/media-browser.js`, modeled after the ESPuino web UI's own SD explorer), or a **podcast** (see below) — force refresh (per card/all), delete.
-- **Podcasts** (concept §7.3): paste a podcast's **RSS feed** URL — the same address a podcast app would subscribe to — and pick *always the newest episode(s)* or specific episodes. The hub downloads the chosen episodes into its own cache (`<data>/podcasts/`) and hands the ESPuino an ordinary file manifest — **no firmware change**, and the card plays from the SD card offline like any other assignment. "Latest" cards are re-checked on a configurable interval (Settings) or on demand ("Check episodes"); a new episode is downloaded in the background and plays from the next tap onwards. Cached episodes are shared between cards and cleaned up automatically — you never tidy the cache by hand: an episode goes as soon as no card needs it, and the hub also sweeps hourly. Settings shows what the cache holds, how close it is to its limit, free disk space and when it last removed something. Two guards stop it filling the disk: a 512 MB free-space reserve and a configurable cache limit (Settings, default 4 GB). Hitting either stops *new* downloads and says so on the affected card — nothing already downloaded is deleted.
+- **Podcasts** (concept §7.3/§7.4): two sources — paste a podcast's **RSS feed** URL (the address a podcast app would subscribe to), or search the **ARD Sounds** catalogue right in the assignment form. Either way, pick *always the newest episode(s)* or specific episodes. The hub downloads the chosen episodes into its own cache (`<data>/podcasts/`) and hands the ESPuino an ordinary file manifest — **no firmware change**, and the card plays from the SD card offline like any other assignment. "Latest" cards are re-checked on a configurable interval (Settings) or on demand ("Check episodes"); a new episode is downloaded in the background and plays from the next tap onwards. Cached episodes are shared between cards and cleaned up automatically — you never tidy the cache by hand: an episode goes as soon as no card needs it, and the hub also sweeps hourly. Settings shows what the cache holds, how close it is to its limit, free disk space and when it last removed something. Two guards stop it filling the disk: a 512 MB free-space reserve and a configurable cache limit (Settings, default 4 GB). Hitting either stops *new* downloads and says so on the affected card — nothing already downloaded is deleted. Note that ARD offers no official public API — see the caveats in the concept.
 - **New Cards**: filter at `/cards?pending=1` — cards registered on tap but not yet assigned (see concept §5.3).
 - **Media** (`/media`): storage usage per card; `/media/browse?path=` is the JSON API backing the tree browser.
 - **Settings** (`/settings`): delete behavior lazy vs. secure (concept §13.1) — secure calls `DELETE /rfid` on the ESPuino and only removes the hub entry after a confirmed 200 response. Also: subfolder recursion depth, how often podcast cards are checked for new episodes, the podcast cache limit with its current usage (episodes held, free disk space, last automatic cleanup), and set/remove the optional hub password.
@@ -89,9 +89,9 @@ The `.mo` files are compiled automatically at Docker build time (see Dockerfile)
 Functional hub with device/card management, per-card manifests
 (`version` = SHA-256, including the force-refresh lever), a library file/folder
 browser for assignment (no uploads — files stay in place under `./media`),
-podcast cards from RSS feeds (newest-episode subscriptions, background
-download and cache cleanup), `pending` registration, lazy/secure delete, and an
-optional web UI password.
+podcast cards from RSS feeds and the ARD Sounds catalogue (newest-episode
+subscriptions, background download and cache cleanup), `pending` registration,
+lazy/secure delete, and an optional web UI password.
 
 Open (see `../mediahub-konzept.md` §15): the ESPuino-side implementation
 (`MEDIAHUB` play mode, `MediaHub_EnsureCard`, LED download animation) is a
@@ -102,6 +102,8 @@ separate firmware topic not yet started.
 unauthenticated — devices can't log in (concept §2). That is fine inside a
 household, but a hub reachable from the internet publishes whatever it
 serves. For podcast cards that matters beyond privacy: the cached episodes
-are somebody else's content, and republishing them is not yours to do. The
-optional web UI password protects the admin interface only, never these
-endpoints.
+are somebody else's content, and republishing them is not yours to do. For
+ARD Sounds cards specifically, the content is licensed for private,
+non-commercial use, and making cached episodes publicly reachable is not
+covered by private-copy rules. The optional web UI password protects the
+admin interface only, never these endpoints.

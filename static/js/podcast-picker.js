@@ -1,10 +1,11 @@
-// Podcast picker for the card assignment form: load a feed, then pick either
-// "always the newest" or a fixed set of episodes.
+// Podcast picker for the card assignment form: load a feed or search the
+// ARD Sounds catalogue, then pick either "always the newest" or a fixed set
+// of episodes.
 //
 // Same house rules as media-browser.js — vanilla JS, no framework, no CDN,
-// the feed is fetched through the hub's own /podcast/feed endpoint (so the
-// browser never talks to the feed host directly). Everything the form
-// submits ends up in one hidden JSON field; the server re-validates it
+// everything goes through the hub's own /podcast/* endpoints (so the browser
+// never talks to a feed host or ARD directly). Everything the form submits
+// ends up in one hidden JSON field; the server re-validates it
 // (_parse_podcast_form).
 (function () {
 	"use strict";
@@ -14,6 +15,13 @@
 		var labels = config.labels;
 		var singleFileModes = (config.singleFileModes || []).map(String);
 
+		var sourceRss = document.getElementById("podcast-source-rss");
+		var sourceArd = document.getElementById("podcast-source-ard");
+		var rssRow = document.getElementById("podcast-rss-row");
+		var ardRow = document.getElementById("podcast-ard-row");
+		var queryInput = document.getElementById("podcast-query");
+		var searchBtn = document.getElementById("podcast-search-btn");
+		var resultsEl = document.getElementById("podcast-results");
 		var feedInput = document.getElementById("podcast-feed-url");
 		var feedBtn = document.getElementById("podcast-feed-btn");
 		var feedStatus = document.getElementById("podcast-feed-status");
@@ -32,16 +40,26 @@
 
 		// The whole picker state, mirrored into the hidden field on every change.
 		var state = {
+			source: config.sources.rss,
 			feed_url: null,
+			show_id: null,
+			show_urn: null,
 			show_title: "",
 			show_image: null,
 			selection: "latest",
 			episode_count: 1,
 			episodes: []
 		};
-		// The feed's episodes, newest first. A feed arrives whole, so there is
-		// nothing to page through.
+		// The episodes on screen, newest first, and how many exist in total. A
+		// feed arrives whole; the ARD catalogue is paged through with
+		// "Load more".
 		var loadedEpisodes = [];
+		var episodesTotal = 0;
+		var episodesLoading = false;
+
+		function isArd() {
+			return state.source === config.sources.ard;
+		}
 
 		function isSingleFileMode() {
 			return singleFileModes.indexOf(playModeSelect.value) !== -1;
@@ -81,7 +99,7 @@
 		// Feeds state the enclosure size, and a 90 MB episode is a very
 		// different proposition for an ESPuino than a 5 MB one — worth seeing
 		// before a card is committed to it. Sources that don't report a size
-		// simply leave the field out.
+		// (ARD's catalogue doesn't) simply leave the field out.
 		function formatSize(bytes) {
 			if (!bytes) {
 				return "";
@@ -90,11 +108,14 @@
 			return (mb >= 10 ? Math.round(mb) : Math.round(mb * 10) / 10) + " MB";
 		}
 
-		// "25 episodes · latest episode: 21/09/2026" — the date is what tells
-		// you at a glance whether a podcast is still running or was last
-		// touched years ago, which the episode count alone does not.
+		// "Die Maus · 950 episodes · latest episode: 21/09/2026" — the date is
+		// what tells you at a glance whether a podcast is still running or was
+		// last touched years ago, which the episode count alone does not.
 		function showMeta(show) {
 			var parts = [];
+			if (show.publisher) {
+				parts.push(show.publisher);
+			}
 			if (show.episode_count) {
 				parts.push(labels.episodeCount.replace("{num}", show.episode_count));
 			}
@@ -108,6 +129,83 @@
 			container.hidden = false;
 			container.innerHTML = "";
 			container.appendChild(text("p", isError ? "podcast-msg podcast-error" : "podcast-msg muted", message));
+		}
+
+		// -- ARD Sounds search ---------------------------------------------
+		function search() {
+			var query = queryInput.value.trim();
+			if (!query) {
+				return;
+			}
+			setMessage(resultsEl, labels.searching, false);
+			fetch(config.searchUrl + "?q=" + encodeURIComponent(query))
+				.then(function (response) {
+					return response.json().then(function (data) {
+						if (!response.ok) {
+							throw new Error(data.error || labels.searchFailed);
+						}
+						return data;
+					});
+				})
+				.then(function (data) {
+					renderResults(data.shows || []);
+				})
+				.catch(function (error) {
+					setMessage(resultsEl, error.message || labels.searchFailed, true);
+				});
+		}
+
+		function renderResults(shows) {
+			if (!shows.length) {
+				setMessage(resultsEl, labels.noResults, false);
+				return;
+			}
+			resultsEl.hidden = false;
+			resultsEl.innerHTML = "";
+			shows.forEach(function (show) {
+				var row = text("div", "podcast-result");
+				if (show.image_url) {
+					var image = document.createElement("img");
+					image.className = "podcast-cover";
+					image.src = show.image_url;
+					image.alt = "";
+					image.loading = "lazy";
+					image.width = 48;
+					image.height = 48;
+					row.appendChild(image);
+				}
+
+				var main = text("div", "podcast-show-main");
+				main.appendChild(text("strong", null, show.title));
+				main.appendChild(text("span", "podcast-meta", showMeta(show)));
+				if (show.synopsis) {
+					main.appendChild(text("span", "podcast-synopsis", show.synopsis));
+				}
+				row.appendChild(main);
+
+				var button = text("button", "btn btn-small btn-secondary", labels.select);
+				button.type = "button";
+				button.addEventListener("click", function () {
+					selectShow(show);
+				});
+				row.appendChild(button);
+				resultsEl.appendChild(row);
+			});
+		}
+
+		function selectShow(show) {
+			state.show_id = String(show.id);
+			state.show_urn = show.urn || null;
+			state.show_title = show.title || "";
+			state.show_image = show.image_url || null;
+			state.episodes = [];
+			loadedEpisodes = [];
+			episodesTotal = 0;
+			resultsEl.hidden = true;
+			renderShow(show);
+			save();
+			updateVisibility();
+			loadEpisodes(true);
 		}
 
 		// -- podcast feed --------------------------------------------------
@@ -138,6 +236,7 @@
 						state.episodes = [];
 					}
 					loadedEpisodes = data.episodes || [];
+					episodesTotal = loadedEpisodes.length;
 					renderShow();
 					save();
 					updateVisibility();
@@ -148,7 +247,8 @@
 				});
 		}
 
-		function renderShow() {
+		function renderShow(show) {
+			show = show || {};
 			showRow.hidden = false;
 			showEl.innerHTML = "";
 			if (state.show_image) {
@@ -163,8 +263,10 @@
 			var main = text("div", "podcast-show-main");
 			main.appendChild(text("strong", null, state.show_title));
 			var meta = showMeta({
-				episode_count: loadedEpisodes.length,
-				last_item_added: loadedEpisodes.length ? loadedEpisodes[0].publish_date : null
+				publisher: show.publisher,
+				episode_count: show.episode_count || episodesTotal,
+				last_item_added: show.last_item_added
+					|| (loadedEpisodes.length ? loadedEpisodes[0].publish_date : null)
 			});
 			if (meta) {
 				main.appendChild(text("span", "podcast-meta", meta));
@@ -174,13 +276,68 @@
 			var change = text("button", "btn btn-small btn-secondary", labels.change);
 			change.type = "button";
 			change.addEventListener("click", function () {
-				feedInput.focus();
-				feedInput.select();
+				resultsEl.hidden = true;
+				var input = isArd() ? queryInput : feedInput;
+				input.focus();
+				input.select();
 			});
 			showEl.appendChild(change);
 		}
 
 		// -- episodes ----------------------------------------------------
+		// Draw the list, fetching the first page first if we have nothing yet.
+		// Never pages further: that is what "Load more" is for.
+		function ensureEpisodes() {
+			if (loadedEpisodes.length) {
+				renderEpisodes();
+			} else {
+				loadEpisodes(true);
+			}
+		}
+
+		function loadEpisodes(reset) {
+			if (!isArd()) {
+				// The whole feed is already in memory.
+				renderEpisodes();
+				return;
+			}
+			if (!state.show_id || episodesLoading) {
+				return;
+			}
+			if (reset) {
+				loadedEpisodes = [];
+				episodesTotal = 0;
+			}
+			if (!reset && loadedEpisodes.length >= episodesTotal && episodesTotal) {
+				return;
+			}
+			episodesLoading = true;
+			if (!loadedEpisodes.length) {
+				setMessage(episodesEl, labels.loadingEpisodes, false);
+			}
+			var url = config.episodesUrlTemplate.replace("SHOW_ID", encodeURIComponent(state.show_id));
+			fetch(url + "?limit=25&offset=" + loadedEpisodes.length)
+				.then(function (response) {
+					return response.json().then(function (data) {
+						if (!response.ok) {
+							throw new Error(data.error || labels.searchFailed);
+						}
+						return data;
+					});
+				})
+				.then(function (data) {
+					episodesTotal = data.total || 0;
+					loadedEpisodes = loadedEpisodes.concat(data.episodes || []);
+					renderEpisodes();
+				})
+				.catch(function (error) {
+					setMessage(episodesEl, error.message || labels.searchFailed, true);
+				})
+				.finally(function () {
+					episodesLoading = false;
+				});
+		}
+
 		function isChosen(episodeId) {
 			return state.episodes.some(function (episode) {
 				return episode.id === String(episodeId);
@@ -285,19 +442,30 @@
 			loadedEpisodes.forEach(function (episode, index) {
 				episodesEl.appendChild(episodeRow(episode, index, picking, marked));
 			});
+
+			if (loadedEpisodes.length < episodesTotal) {
+				var more = text("button", "btn btn-small btn-secondary podcast-load-more", labels.loadMore);
+				more.type = "button";
+				more.addEventListener("click", function () {
+					loadEpisodes(false);
+				});
+				episodesEl.appendChild(more);
+			}
 		}
 
 		// -- wiring ------------------------------------------------------
 		function updateVisibility() {
-			var hasFeed = !!state.feed_url;
-			showRow.hidden = !hasFeed;
-			selectionRow.hidden = !hasFeed;
-			playModeRow.hidden = !hasFeed;
+			rssRow.hidden = isArd();
+			ardRow.hidden = !isArd();
+			var hasPodcast = isArd() ? !!state.show_id : !!state.feed_url;
+			showRow.hidden = !hasPodcast;
+			selectionRow.hidden = !hasPodcast;
+			playModeRow.hidden = !hasPodcast;
 			countRow.hidden = state.selection !== "latest";
-			// The list stays up in both modes — seeing what the feed holds is
-			// just as useful when the hub does the picking.
-			episodesEl.hidden = !hasFeed;
-			episodesNote.hidden = !hasFeed;
+			// The list stays up in both modes — seeing what the podcast holds
+			// is just as useful when the hub does the picking.
+			episodesEl.hidden = !hasPodcast;
+			episodesNote.hidden = !hasPodcast;
 			countInput.disabled = isSingleFileMode();
 			if (isSingleFileMode()) {
 				countInput.value = 1;
@@ -311,6 +479,36 @@
 			}
 			save();
 		}
+
+		[sourceRss, sourceArd].forEach(function (radio) {
+			radio.addEventListener("change", function () {
+				state.source = radio.value;
+				// Switching source invalidates whatever the other one picked.
+				state.show_id = null;
+				state.show_urn = null;
+				state.feed_url = null;
+				state.show_title = "";
+				state.show_image = null;
+				state.episodes = [];
+				loadedEpisodes = [];
+				episodesTotal = 0;
+				resultsEl.hidden = true;
+				feedStatus.hidden = true;
+				showEl.innerHTML = "";
+				save();
+				updateVisibility();
+			});
+		});
+
+		searchBtn.addEventListener("click", search);
+		queryInput.addEventListener("keydown", function (event) {
+			if (event.key === "Enter") {
+				// Enter in the search box must search, not submit the
+				// half-filled assignment form.
+				event.preventDefault();
+				search();
+			}
+		});
 
 		feedBtn.addEventListener("click", function () {
 			loadFeed(false);
@@ -329,7 +527,7 @@
 				state.selection = radio.value;
 				save();
 				updateVisibility();
-				renderEpisodes();
+				ensureEpisodes();
 			});
 		});
 
@@ -354,10 +552,15 @@
 		});
 
 		// Re-open an existing podcast card with its saved intent in place.
-		if (config.initial && config.initial.feed_url) {
+		if (config.initial && (config.initial.feed_url || config.initial.show_id)) {
 			var initial = config.initial;
-			state.feed_url = initial.feed_url;
-			state.show_title = initial.show_title || initial.feed_url;
+			state.source = initial.source === config.sources.ard
+				? config.sources.ard
+				: config.sources.rss;
+			state.feed_url = initial.feed_url || null;
+			state.show_id = initial.show_id ? String(initial.show_id) : null;
+			state.show_urn = initial.show_urn || null;
+			state.show_title = initial.show_title || initial.feed_url || "";
 			state.show_image = initial.show_image || null;
 			state.selection = initial.selection === "episodes" ? "episodes" : "latest";
 			state.episode_count = initial.episode_count || 1;
@@ -370,13 +573,20 @@
 				};
 			});
 			countInput.value = state.episode_count;
-			feedInput.value = state.feed_url;
 			renderShow();
-			// Refetch so the episode list is on screen (and tickable) right
-			// away — the card only stores what was picked, not the feed.
-			loadFeed(true);
+			if (isArd()) {
+				// Refetch so the list is on screen right away — the card only
+				// stores what was picked, not the catalogue.
+				loadEpisodes(true);
+			} else {
+				feedInput.value = state.feed_url;
+				// Refetch so the episode list is on screen (and tickable) right
+				// away — the card only stores what was picked, not the feed.
+				loadFeed(true);
+			}
 		}
 
+		(isArd() ? sourceArd : sourceRss).checked = true;
 		(state.selection === "episodes" ? episodesRadio : latestRadio).checked = true;
 		updateVisibility();
 	}
