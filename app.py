@@ -24,6 +24,7 @@ from flask_babel import Babel, get_locale, gettext as _, ngettext
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import check_password_hash, generate_password_hash
 
+import ard_sounds
 import manifest as manifest_lib
 import media_library
 import podcast_cache
@@ -257,7 +258,12 @@ def _podcast_detail(card):
     """"<show> · newest episode" resp. the episode titles actually synced —
     what a podcast card shows in the Content column."""
     podcast = card.get("podcast") or {}
-    show = podcast.get("show_title") or _("Podcast")
+    default = (
+        _("ARD Sounds")
+        if podcast_sync.source_of(podcast) == podcast_sync.SOURCE_ARD
+        else _("Podcast")
+    )
+    show = podcast.get("show_title") or default
     if podcast.get("selection") == "latest":
         count = podcast.get("episode_count") or 1
         which = ngettext("newest episode", "%(num)s newest episodes", count) % {"num": count}
@@ -283,7 +289,7 @@ def _podcast_status(card):
                     total=state["total"],
                 ),
             )
-        return (kind, _("checking the feed…"))
+        return (kind, _("checking for new episodes…"))
     if kind == podcast_sync.STATE_ERROR:
         # Storage refusals are the errors an admin can actually act on, so
         # they get a translated sentence built here rather than the English
@@ -430,8 +436,11 @@ def duplicate_card(esp_id, card_id):
 _RSS_EPISODE_ID = re.compile(r"^rss-[0-9a-f]{16}$")
 
 
-def _is_valid_episode_id(episode_id):
-    """Feed episode ids are the hash podcast_feed derives from a GUID."""
+def _is_valid_episode_id(source, episode_id):
+    """Feed episode ids are the hash podcast_feed derives from a GUID; ARD
+    episode ids are numeric."""
+    if source == podcast_sync.SOURCE_ARD:
+        return episode_id.isdigit()
     return bool(_RSS_EPISODE_ID.match(episode_id))
 
 
@@ -448,9 +457,16 @@ def _parse_podcast_form(form):
     if not isinstance(raw, dict):
         raw = {}
 
-    feed_url = str(raw.get("feed_url") or "").strip()
-    if not feed_url.startswith(("http://", "https://")):
-        return (None, _("Please load a podcast feed first."))
+    source = podcast_sync.source_of(raw)
+    show_id, feed_url = "", ""
+    if source == podcast_sync.SOURCE_ARD:
+        show_id = str(raw.get("show_id") or "").strip()
+        if not show_id.isdigit():
+            return (None, _("Please pick a show from ARD Sounds first."))
+    else:
+        feed_url = str(raw.get("feed_url") or "").strip()
+        if not feed_url.startswith(("http://", "https://")):
+            return (None, _("Please load a podcast feed first."))
 
     selection = raw.get("selection")
     if selection not in ("latest", "episodes"):
@@ -465,7 +481,7 @@ def _parse_podcast_form(form):
             if not isinstance(entry, dict):
                 continue
             episode_id = str(entry.get("id") or "").strip()
-            if not _is_valid_episode_id(episode_id):
+            if not _is_valid_episode_id(source, episode_id):
                 continue
             try:
                 duration = int(entry.get("duration") or 0)
@@ -505,7 +521,10 @@ def _parse_podcast_form(form):
 
     return (
         {
-            "feed_url": feed_url,
+            "source": source,
+            "feed_url": feed_url or None,
+            "show_id": show_id,
+            "show_urn": str(raw.get("show_urn") or "") or None,
             "show_title": str(raw.get("show_title") or "")[:300],
             "show_image": str(raw.get("show_image") or "") or None,
             "selection": selection,
@@ -616,17 +635,48 @@ def assign_card(esp_id, card_id):
         podcast_play_modes=manifest_lib.PODCAST_PLAY_MODES,
         default_podcast_play_mode=manifest_lib.DEFAULT_PODCAST_PLAY_MODE,
         max_podcast_episodes=podcast_sync.MAX_EPISODES,
+        podcast_sources={"ard": podcast_sync.SOURCE_ARD, "rss": podcast_sync.SOURCE_RSS},
     )
 
 
 # --------------------------------------------------------------------------
-# Web UI: podcasts (concept §7.3)
+# Web UI: podcasts (concept §7.3/§7.4)
 #
-# The feed is fetched through the hub rather than from the browser: it keeps
-# the frontend CDN-free and offline-capable like the rest of the UI (no
-# third-party script, no CORS dance), lets one shared in-process cache serve
-# every admin, and means only the hub ever talks to the outside.
+# Feed and catalogue are both fetched through the hub rather than from the
+# browser: it keeps the frontend CDN-free and offline-capable like the rest
+# of the UI (no third-party script, no CORS dance), lets one shared
+# in-process cache serve every admin, and means only the hub ever talks to
+# the outside.
 # --------------------------------------------------------------------------
+@app.route("/podcast/search")
+def podcast_search():
+    query = request.args.get("q", "")
+    try:
+        shows = ard_sounds.search_shows(query)
+    except ard_sounds.ArdSoundsError as exc:
+        return jsonify(error=str(exc)), 502
+    return jsonify(query=query.strip(), shows=shows)
+
+
+@app.route("/podcast/shows/<show_id>/episodes")
+def podcast_episodes(show_id):
+    if not show_id.isdigit():
+        abort(404)
+    try:
+        limit = int(request.args.get("limit", 25))
+    except ValueError:
+        limit = 25
+    try:
+        offset = int(request.args.get("offset", 0))
+    except ValueError:
+        offset = 0
+    try:
+        listing = ard_sounds.list_episodes(show_id, limit=limit, offset=offset)
+    except ard_sounds.ArdSoundsError as exc:
+        return jsonify(error=str(exc)), 502
+    return jsonify(offset=max(0, offset), **listing)
+
+
 @app.route("/podcast/feed")
 def podcast_feed_preview():
     """Title and episodes of a podcast feed the admin pasted.
@@ -677,7 +727,7 @@ def podcast_refresh_card(esp_id, card_id):
     if store.mark_podcast_pending(esp_id, card_id) is None:
         abort(404)
     podcast_worker.nudge()
-    flash(_("Checking the feed for new episodes of card %(id)s.", id=card_id), "success")
+    flash(_("Checking for new episodes of card %(id)s.", id=card_id), "success")
     return redirect(url_for("cards"))
 
 

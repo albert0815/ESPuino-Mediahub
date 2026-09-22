@@ -179,12 +179,12 @@ def download_episode(data_dir, relpath, audio_url, budget_bytes=0):
     partial file behind.
     """
     if not audio_url:
-        raise PodcastDownloadError("The feed lists no audio URL for this episode.")
+        raise PodcastDownloadError("No audio URL for this episode.")
 
-    # Only ever fetch over HTTP(S). The URL comes from a podcast feed rather
-    # than from a person, but urllib would just as happily
-    # open file:// or ftp://, and whatever lands in the cache is served by the
-    # unauthenticated /podcast-media/ endpoint.
+    # Only ever fetch over HTTP(S). The URL comes from a podcast feed or
+    # ARD's catalogue rather than from a person, but urllib would just as
+    # happily open file:// or ftp://, and whatever lands in the cache is
+    # served by the unauthenticated /podcast-media/ endpoint.
     scheme = urllib.parse.urlsplit(audio_url).scheme.lower()
     if scheme not in ("http", "https"):
         raise PodcastDownloadError(
