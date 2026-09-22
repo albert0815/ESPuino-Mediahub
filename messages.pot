@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-22 10:14+0000\n"
+"POT-Creation-Date: 2026-09-22 11:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -374,7 +374,7 @@ msgstr ""
 msgid "Audio files"
 msgstr ""
 
-#: templates/card_form.html:40 templates/card_form.html:129
+#: templates/card_form.html:40 templates/card_form.html:130
 msgid "Play mode"
 msgstr ""
 
@@ -473,53 +473,63 @@ msgstr ""
 msgid "a fixed pick that never changes on its own."
 msgstr ""
 
-#: templates/card_form.html:136
+#: templates/card_form.html:137
 msgid ""
 "Position-remembering modes are handy for long episodes. Note that with "
 "\"always the newest\" a remembered position carries over to the new "
 "episode."
 msgstr ""
 
-#: templates/card_form.html:147
+#: templates/card_form.html:148
 #, python-format
 msgid "%(num)s episodes"
 msgstr ""
 
-#: templates/card_form.html:148
+#: templates/card_form.html:149
 #, python-format
 msgid "latest episode: %(date)s"
 msgstr ""
 
-#: templates/card_form.html:149
+#: templates/card_form.html:150
 msgid "Choose a different podcast"
 msgstr ""
 
-#: templates/card_form.html:150
+#: templates/card_form.html:151
 msgid "This feed currently has no playable episodes."
 msgstr ""
 
-#: templates/card_form.html:151
-msgid "Loading feed…"
-msgstr ""
-
 #: templates/card_form.html:152
-msgid "Could not read this feed."
+msgid ""
+"The feed as it is right now — when a new episode appears, the list moves "
+"up. Click one to play just that episode instead."
 msgstr ""
 
 #: templates/card_form.html:153
-msgid "This play mode only supports a single episode."
+msgid "Pick the episodes this card plays."
 msgstr ""
 
 #: templates/card_form.html:154
+msgid "Loading feed…"
+msgstr ""
+
+#: templates/card_form.html:155
+msgid "Could not read this feed."
+msgstr ""
+
+#: templates/card_form.html:156
+msgid "This play mode only supports a single episode."
+msgstr ""
+
+#: templates/card_form.html:157
 msgid "newest"
 msgstr ""
 
-#: templates/card_form.html:161 templates/devices.html:35
+#: templates/card_form.html:164 templates/devices.html:35
 #: templates/settings.html:57
 msgid "Save"
 msgstr ""
 
-#: templates/card_form.html:162 templates/cards.html:161
+#: templates/card_form.html:165 templates/cards.html:161
 msgid "Cancel"
 msgstr ""
 

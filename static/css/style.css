@@ -814,6 +814,11 @@ input[type="file"]:focus,
 	width: 80px;
 }
 
+.podcast-episode-note {
+	margin: 0 0 6px;
+	font-size: .82rem;
+}
+
 .podcast-episode {
 	display: flex;
 	align-items: flex-start;
@@ -822,6 +827,40 @@ input[type="file"]:focus,
 	border-radius: 8px;
 	cursor: pointer;
 	font-size: .9rem;
+}
+
+/* Preview rows are <button>s (they switch to a fixed pick), so the browser's
+   own button chrome has to go before they line up with the <label> rows. */
+button.podcast-episode {
+	width: 100%;
+	border: 0;
+	background: none;
+	font: inherit;
+	font-size: .9rem;
+	color: inherit;
+	text-align: left;
+}
+
+.podcast-episode.is-dimmed {
+	opacity: .55;
+}
+
+.podcast-badge {
+	flex-shrink: 0;
+	align-self: flex-start;
+	min-width: 4.4em;
+	margin-top: 1px;
+	padding: 1px 7px;
+	border-radius: 999px;
+	font-size: .72rem;
+	font-weight: 600;
+	text-align: center;
+	white-space: nowrap;
+}
+
+.is-newest .podcast-badge {
+	background: color-mix(in srgb, var(--brand) 15%, transparent);
+	color: var(--brand);
 }
 
 .podcast-episode:hover {

@@ -25,6 +25,7 @@
 		var countRow = document.getElementById("podcast-count-row");
 		var countInput = document.getElementById("podcast-count");
 		var episodesEl = document.getElementById("podcast-episodes");
+		var episodesNote = document.getElementById("podcast-episodes-note");
 		var playModeRow = document.getElementById("podcast-play-mode-row");
 		var playModeSelect = document.getElementById("podcast_play_mode");
 		var hiddenInput = document.getElementById("podcast-json");
@@ -128,9 +129,7 @@
 					renderShow();
 					save();
 					updateVisibility();
-					if (state.selection === "episodes") {
-						renderEpisodes();
-					}
+					renderEpisodes();
 				})
 				.catch(function (error) {
 					setMessage(feedStatus, error.message || labels.feedFailed, true);
@@ -201,15 +200,29 @@
 			return true;
 		}
 
-		function renderEpisodes() {
-			if (!loadedEpisodes.length) {
-				setMessage(episodesEl, labels.noEpisodes, false);
-				return;
-			}
-			episodesEl.hidden = false;
-			episodesEl.innerHTML = "";
-			loadedEpisodes.forEach(function (episode) {
-				var row = text("label", "podcast-episode");
+		// How many of the listed episodes "always the newest" currently covers.
+		function previewCount() {
+			var wanted = isSingleFileMode() ? 1 : state.episode_count || 1;
+			return Math.min(wanted, loadedEpisodes.length);
+		}
+
+		// Clicking a row while previewing: the short way from "actually, just
+		// that one" to a fixed selection.
+		function pickOnly(episode) {
+			state.selection = "episodes";
+			state.episodes = [];
+			episodesRadio.checked = true;
+			toggleEpisode(episode, true);
+			updateVisibility();
+		}
+
+		// A row carries a checkbox only while picking. In "always the newest"
+		// the list is a preview, and a disabled, empty checkbox would read as
+		// "nothing selected" — exactly the opposite of what the marker says.
+		function episodeRow(episode, index, picking, marked) {
+			var row;
+			if (picking) {
+				row = text("label", "podcast-episode");
 				var checkbox = document.createElement("input");
 				checkbox.type = "checkbox";
 				checkbox.checked = isChosen(episode.id);
@@ -219,15 +232,42 @@
 					}
 				});
 				row.appendChild(checkbox);
+			} else {
+				row = text("button", "podcast-episode");
+				// Inside a form an untyped button submits it.
+				row.type = "button";
+				row.addEventListener("click", function () {
+					pickOnly(episode);
+				});
+				// The badge slot is always there, empty on the rows below the
+				// window — otherwise the titles sit on a ragged left edge.
+				var newest = index < marked;
+				row.classList.add(newest ? "is-newest" : "is-dimmed");
+				row.appendChild(text("span", "podcast-badge", newest ? labels.newest : ""));
+			}
 
-				var main = text("span", "podcast-episode-main");
-				main.appendChild(text("span", "podcast-episode-title", episode.title));
-				var meta = [formatDate(episode.publish_date), formatDuration(episode.duration)]
-					.filter(Boolean)
-					.join(" · ");
-				main.appendChild(text("span", "podcast-meta", meta));
-				row.appendChild(main);
-				episodesEl.appendChild(row);
+			var main = text("span", "podcast-episode-main");
+			main.appendChild(text("span", "podcast-episode-title", episode.title));
+			var meta = [formatDate(episode.publish_date), formatDuration(episode.duration)]
+				.filter(Boolean)
+				.join(" · ");
+			main.appendChild(text("span", "podcast-meta", meta));
+			row.appendChild(main);
+			return row;
+		}
+
+		function renderEpisodes() {
+			var picking = state.selection === "episodes";
+			episodesNote.textContent = picking ? labels.pickNote : labels.previewNote;
+			if (!loadedEpisodes.length) {
+				setMessage(episodesEl, labels.noEpisodes, false);
+				return;
+			}
+			episodesEl.hidden = false;
+			episodesEl.innerHTML = "";
+			var marked = picking ? 0 : previewCount();
+			loadedEpisodes.forEach(function (episode, index) {
+				episodesEl.appendChild(episodeRow(episode, index, picking, marked));
 			});
 		}
 
@@ -238,7 +278,10 @@
 			selectionRow.hidden = !hasFeed;
 			playModeRow.hidden = !hasFeed;
 			countRow.hidden = state.selection !== "latest";
-			episodesEl.hidden = state.selection !== "episodes" || !hasFeed;
+			// The list stays up in both modes — seeing what the feed holds is
+			// just as useful when the hub does the picking.
+			episodesEl.hidden = !hasFeed;
+			episodesNote.hidden = !hasFeed;
 			countInput.disabled = isSingleFileMode();
 			if (isSingleFileMode()) {
 				countInput.value = 1;
@@ -270,9 +313,7 @@
 				state.selection = radio.value;
 				save();
 				updateVisibility();
-				if (state.selection === "episodes") {
-					renderEpisodes();
-				}
+				renderEpisodes();
 			});
 		});
 
@@ -283,13 +324,17 @@
 			}
 			state.episode_count = Math.min(value, config.maxEpisodes);
 			save();
+			// Live feedback for the number field: re-mark the preview.
+			if (state.selection === "latest") {
+				renderEpisodes();
+			}
 		});
 
 		playModeSelect.addEventListener("change", function () {
+			// A single-file mode caps the card at one episode, which changes
+			// both the ticks and how much of the preview is marked.
 			updateVisibility();
-			if (state.selection === "episodes") {
-				renderEpisodes();
-			}
+			renderEpisodes();
 		});
 
 		// Re-open an existing podcast card with its saved intent in place.

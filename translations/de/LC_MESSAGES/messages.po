@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ESPuino MediaHub\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-22 10:14+0000\n"
+"POT-Creation-Date: 2026-09-22 11:57+0000\n"
 "PO-Revision-Date: 2026-07-15 09:43+0200\n"
 "Last-Translator: ESPuino MediaHub\n"
 "Language: de\n"
@@ -111,7 +111,6 @@ msgstr "lädt %(done)s/%(total)s"
 #: app.py:286
 msgid "checking the feed…"
 msgstr "Feed wird geprüft …"
-
 
 #: app.py:295
 #, python-format
@@ -218,7 +217,6 @@ msgstr "Karte %(id)s zugewiesen."
 #, python-format
 msgid "Checking the feed for new episodes of card %(id)s."
 msgstr "Der Feed wird auf neue Folgen für Karte %(id)s geprüft."
-
 
 #: app.py:696
 #, python-format
@@ -401,7 +399,7 @@ msgstr "Inhaltstyp"
 msgid "Audio files"
 msgstr "Audiodateien"
 
-#: templates/card_form.html:40 templates/card_form.html:129
+#: templates/card_form.html:40 templates/card_form.html:130
 msgid "Play mode"
 msgstr "Abspielmodus"
 
@@ -474,13 +472,15 @@ msgid ""
 "Any podcast feed works — the address a podcast app would subscribe to. "
 "MediaHub downloads the chosen episodes itself, so the ESPuino plays them "
 "from its SD card like any other assignment — offline included."
-msgstr "Jeder Podcast-Feed funktioniert — die Adresse, die auch eine Podcast-App abonnieren würde. MediaHub lädt die gewählten Folgen selbst herunter, der ESPuino spielt sie also wie jede andere Zuweisung von der SD-Karte — auch offline."
-
+msgstr ""
+"Jeder Podcast-Feed funktioniert — die Adresse, die auch eine Podcast-App "
+"abonnieren würde. MediaHub lädt die gewählten Folgen selbst herunter, der"
+" ESPuino spielt sie also wie jede andere Zuweisung von der SD-Karte — "
+"auch offline."
 
 #: templates/card_form.html:99
 msgid "Selected podcast"
 msgstr "Ausgewählter Podcast"
-
 
 #: templates/card_form.html:104
 msgid "Which episodes?"
@@ -494,8 +494,9 @@ msgstr "Immer die neueste"
 msgid ""
 "the hub re-checks the feed and fetches new episodes on its own; the card "
 "plays the new one from the next tap onwards."
-msgstr "der Hub sieht selbstständig im Feed nach und lädt neue Folgen; ab dem nächsten Auflegen spielt die Karte die neue Folge."
-
+msgstr ""
+"der Hub sieht selbstständig im Feed nach und lädt neue Folgen; ab dem "
+"nächsten Auflegen spielt die Karte die neue Folge."
 
 #: templates/card_form.html:114
 msgid "How many of the newest episodes?"
@@ -509,7 +510,7 @@ msgstr "Bestimmte Folgen"
 msgid "a fixed pick that never changes on its own."
 msgstr "eine feste Auswahl, die sich nie von selbst ändert."
 
-#: templates/card_form.html:136
+#: templates/card_form.html:137
 msgid ""
 "Position-remembering modes are handy for long episodes. Note that with "
 "\"always the newest\" a remembered position carries over to the new "
@@ -519,48 +520,58 @@ msgstr ""
 "„immer die neueste\" wandert eine gemerkte Position mit auf die neue "
 "Folge."
 
-#: templates/card_form.html:147
+#: templates/card_form.html:148
 #, python-format
 msgid "%(num)s episodes"
 msgstr "%(num)s Folgen"
 
-#: templates/card_form.html:148
+#: templates/card_form.html:149
 #, python-format
 msgid "latest episode: %(date)s"
 msgstr "neueste Folge: %(date)s"
 
-#: templates/card_form.html:149
+#: templates/card_form.html:150
 msgid "Choose a different podcast"
 msgstr "Anderen Podcast wählen"
 
-
-#: templates/card_form.html:150
+#: templates/card_form.html:151
 msgid "This feed currently has no playable episodes."
 msgstr "Dieser Feed hat derzeit keine abspielbaren Folgen."
 
+#: templates/card_form.html:152
+msgid ""
+"The feed as it is right now — when a new episode appears, the list moves "
+"up. Click one to play just that episode instead."
+msgstr "Der Feed, so wie er jetzt ist — erscheint eine neue Folge, rückt die Liste nach. Ein Klick auf eine Folge spielt stattdessen genau diese."
 
-#: templates/card_form.html:151
+
+#: templates/card_form.html:153
+msgid "Pick the episodes this card plays."
+msgstr "Wähle die Folgen aus, die diese Karte spielt."
+
+
+#: templates/card_form.html:154
 msgid "Loading feed…"
 msgstr "Feed wird geladen …"
 
-#: templates/card_form.html:152
+#: templates/card_form.html:155
 msgid "Could not read this feed."
 msgstr "Dieser Feed konnte nicht gelesen werden."
 
-#: templates/card_form.html:153
+#: templates/card_form.html:156
 msgid "This play mode only supports a single episode."
 msgstr "Dieser Abspielmodus unterstützt nur eine einzelne Folge."
 
-#: templates/card_form.html:154
+#: templates/card_form.html:157
 msgid "newest"
 msgstr "neueste"
 
-#: templates/card_form.html:161 templates/devices.html:35
+#: templates/card_form.html:164 templates/devices.html:35
 #: templates/settings.html:57
 msgid "Save"
 msgstr "Speichern"
 
-#: templates/card_form.html:162 templates/cards.html:161
+#: templates/card_form.html:165 templates/cards.html:161
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -699,8 +710,9 @@ msgstr "Force Refresh"
 msgid ""
 "Check the feed for new episodes right now instead of waiting for the next"
 " scheduled check."
-msgstr "Jetzt sofort im Feed nach neuen Folgen sehen, statt auf die nächste planmäßige Prüfung zu warten."
-
+msgstr ""
+"Jetzt sofort im Feed nach neuen Folgen sehen, statt auf die nächste "
+"planmäßige Prüfung zu warten."
 
 #: templates/cards.html:118
 msgid "Check episodes"
@@ -811,8 +823,9 @@ msgstr "Registrierte Geräte und ihren Sync-Status im Blick behalten."
 msgid ""
 "Define which RFID card plays which content and play mode: library files, "
 "webradio or podcasts."
-msgstr "Festlegen, welche RFID-Karte welchen Inhalt und Abspielmodus bekommt: Bibliotheksdateien, Webradio oder Podcasts."
-
+msgstr ""
+"Festlegen, welche RFID-Karte welchen Inhalt und Abspielmodus bekommt: "
+"Bibliotheksdateien, Webradio oder Podcasts."
 
 #: templates/index.html:21
 #, python-format
@@ -832,11 +845,9 @@ msgstr "%(num)s wartend"
 msgid "Storage usage per card, plus the size of the hub's podcast episode cache."
 msgstr "Speicherbelegung pro Karte, dazu die Größe des Podcast-Caches im Hub."
 
-
 #: templates/index.html:41
 msgid "Delete behavior (lazy/secure), recursion depth, podcast episode checks."
 msgstr "Löschverhalten (lazy/secure), Rekursionstiefe, Podcast-Prüfintervall."
-
 
 #: templates/login.html:3 templates/login.html:7 templates/login.html:18
 msgid "Sign in"
@@ -878,8 +889,11 @@ msgid ""
 "This is the only media MediaHub stores itself: the podcast episodes it "
 "downloaded for your cards (%(num)s in total). Files from your library "
 "always stay where they are and are never copied."
-msgstr "Das sind die einzigen Mediendaten, die MediaHub selbst speichert: die für deine Karten heruntergeladenen Podcast-Folgen (insgesamt %(num)s). Dateien aus deiner Bibliothek bleiben immer an ihrem Platz und werden nie kopiert."
-
+msgstr ""
+"Das sind die einzigen Mediendaten, die MediaHub selbst speichert: die für"
+" deine Karten heruntergeladenen Podcast-Folgen (insgesamt %(num)s). "
+"Dateien aus deiner Bibliothek bleiben immer an ihrem Platz und werden nie"
+" kopiert."
 
 #: templates/media.html:32
 msgid "You never have to clean this up."
@@ -955,8 +969,10 @@ msgid ""
 "Configure how the hub behaves when a card assignment is deleted, how deep"
 " it looks into subfolders for recursive play modes, and how often it "
 "checks podcast feeds for new episodes."
-msgstr "Legt fest, wie sich der Hub beim Löschen einer Kartenzuweisung verhält, wie tief er für rekursive Abspielmodi in Unterordner schaut, und wie oft er Podcast-Feeds auf neue Folgen prüft."
-
+msgstr ""
+"Legt fest, wie sich der Hub beim Löschen einer Kartenzuweisung verhält, "
+"wie tief er für rekursive Abspielmodi in Unterordner schaut, und wie oft "
+"er Podcast-Feeds auf neue Folgen prüft."
 
 #: templates/settings.html:13
 msgid "Delete behavior"
