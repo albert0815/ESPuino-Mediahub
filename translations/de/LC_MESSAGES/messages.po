@@ -81,39 +81,39 @@ msgid_plural "%(num)s files"
 msgstr[0] "%(num)s Datei"
 msgstr[1] "%(num)s Dateien"
 
-#: app.py:316
+#: app.py:347
 msgid "Card ID must be exactly 12 digits."
 msgstr "Die Karten-ID muss genau 12 Ziffern haben."
 
-#: app.py:320
+#: app.py:351
 msgid "Please choose a known ESPuino."
 msgstr "Bitte einen bekannten ESPuino wählen."
 
-#: app.py:329 app.py:349
+#: app.py:360 app.py:380
 #, python-format
 msgid "Card %(id)s is already assigned on this ESPuino — opening it for editing."
 msgstr ""
 "Karte %(id)s ist auf diesem ESPuino bereits zugewiesen — wird zum "
 "Bearbeiten geöffnet."
 
-#: app.py:343
+#: app.py:374
 msgid "Please choose a different, known ESPuino."
 msgstr "Bitte einen anderen, bekannten ESPuino wählen."
 
-#: app.py:363
+#: app.py:394
 #, python-format
 msgid "Card %(id)s duplicated to %(esp_id)s."
 msgstr "Karte %(id)s dupliziert auf %(esp_id)s."
 
-#: app.py:387
+#: app.py:418
 msgid "A stream URL is required for webradio."
 msgstr "Für Webradio wird eine Stream-URL benötigt."
 
-#: app.py:396
+#: app.py:427
 msgid "Please choose a valid play mode."
 msgstr "Bitte einen gültigen Abspielmodus wählen."
 
-#: app.py:415
+#: app.py:446
 #, python-format
 msgid ""
 "Some selected files could not be used (missing, or not readable by the "
@@ -122,37 +122,37 @@ msgstr ""
 "Einige ausgewählte Dateien konnten nicht verwendet werden (fehlen oder "
 "vom Container-Nutzer nicht lesbar) und wurden übersprungen: %(paths)s"
 
-#: app.py:424
+#: app.py:455
 msgid "At least one audio file is required."
 msgstr "Mindestens eine Audiodatei wird benötigt."
 
-#: app.py:428
+#: app.py:459
 msgid "This play mode only supports a single file — please select just one."
 msgstr ""
 "Dieser Abspielmodus unterstützt nur eine einzelne Datei — bitte nur eine "
 "auswählen."
 
-#: app.py:441
+#: app.py:472
 #, python-format
 msgid "Card %(id)s assigned."
 msgstr "Karte %(id)s zugewiesen."
 
-#: app.py:444
+#: app.py:475
 #, python-format
 msgid "Card %(id)s assigned on %(num)s ESPuinos."
 msgstr "Karte %(id)s auf %(num)s ESPuinos zugewiesen."
 
-#: app.py:466
+#: app.py:497
 #, python-format
 msgid "Force refresh triggered for card %(id)s."
 msgstr "Force Refresh für Karte %(id)s ausgelöst."
 
-#: app.py:473
+#: app.py:504
 #, python-format
 msgid "Force refresh triggered for all %(num)s cards."
 msgstr "Force Refresh für alle %(num)s Karten ausgelöst."
 
-#: app.py:492
+#: app.py:523
 #, python-format
 msgid ""
 "Secure delete: ESPuino (%(esp_id)s) did not confirm the deletion. Card "
@@ -161,32 +161,32 @@ msgstr ""
 "Secure Delete: Der ESPuino (%(esp_id)s) hat das Löschen nicht bestätigt. "
 "Die Karte wurde beibehalten, bitte erneut versuchen."
 
-#: app.py:505
+#: app.py:536
 #, python-format
 msgid "Card %(id)s deleted (%(mode)s)."
 msgstr "Karte %(id)s gelöscht (%(mode)s)."
 
-#: app.py:586
+#: app.py:617
 msgid "Recursion depth must be between 0 and 20."
 msgstr "Die Rekursionstiefe muss zwischen 0 und 20 liegen."
 
-#: app.py:589
+#: app.py:620
 msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 
-#: app.py:599
+#: app.py:630
 msgid "Please enter a password."
 msgstr "Bitte ein Passwort eingeben."
 
-#: app.py:601
+#: app.py:632
 msgid "Passwords do not match."
 msgstr "Die Passwörter stimmen nicht überein."
 
-#: app.py:604
+#: app.py:635
 msgid "Hub password set."
 msgstr "Hub-Passwort gesetzt."
 
-#: app.py:612
+#: app.py:643
 msgid "Hub password removed."
 msgstr "Hub-Passwort entfernt."
 
@@ -272,7 +272,15 @@ msgstr "Einstellungen"
 msgid "Log out"
 msgstr "Abmelden"
 
-#: templates/base.html:53
+#: templates/base.html:54
+msgid "New cards have arrived in the meantime."
+msgstr "Inzwischen sind neue Karten eingetroffen."
+
+#: templates/base.html:55
+msgid "Refresh now"
+msgstr "Jetzt aktualisieren"
+
+#: templates/base.html:62
 msgid "MediaHub · a local media hub for ESPuino"
 msgstr "MediaHub · ein lokaler Medien-Hub für ESPuino"
 

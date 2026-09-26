@@ -279,6 +279,37 @@ def _assignment_target_choices(esp_id, card_id):
     return choices
 
 
+def _cards_revision():
+    """Short fingerprint of everything the card list and the dashboard's
+    "new cards" badge show: how many cards exist, how many are still
+    pending, and the newest tap/change timestamp."""
+    cards_by_key = store.list_cards()
+    pending = sum(1 for c in cards_by_key.values() if c["status"] == "pending")
+    last_seen = max((c.get("last_seen") or "" for c in cards_by_key.values()), default="")
+    updated = max((c.get("updated_at") or "" for c in cards_by_key.values()), default="")
+    return f"{len(cards_by_key)}:{pending}:{last_seen}:{updated}"
+
+
+@app.route("/cards/state")
+def cards_state():
+    """Lets an open admin page notice a card that was just tapped without
+    the admin reloading. Deliberately polled by the browser instead of
+    pushed from here: gunicorn runs two sync workers (see Dockerfile), so a
+    held-open SSE stream would occupy one of them for as long as its tab
+    stays open — two tabs and the ESPuino-facing API starves. A poll is an
+    ordinary short request and gives its worker straight back."""
+    return jsonify(revision=_cards_revision())
+
+
+@app.context_processor
+def _inject_live_cards():
+    """Only the pages showing card counts get a revision, which is what
+    switches on the auto-refresh markup in base.html."""
+    if request.endpoint in ("index", "cards"):
+        return {"live_cards_revision": _cards_revision()}
+    return {}
+
+
 @app.route("/cards")
 def cards():
     only_pending = request.args.get("pending") == "1"

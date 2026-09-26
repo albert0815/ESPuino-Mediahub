@@ -317,6 +317,14 @@ main.container {
 	color: var(--brand-dark);
 }
 
+.live-banner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 24px;
+}
+
 /* --- Empty state --- */
 .empty-state {
 	color: var(--muted);
