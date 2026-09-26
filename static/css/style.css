@@ -325,6 +325,12 @@ main.container {
 	margin-bottom: 24px;
 }
 
+/* An author rule beats the browser's own [hidden] { display: none }, whatever
+   the specificity — without this the banner above would never hide again. */
+.live-banner[hidden] {
+	display: none;
+}
+
 /* --- Empty state --- */
 .empty-state {
 	color: var(--muted);
