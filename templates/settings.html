@@ -5,7 +5,7 @@
 {% block content %}
 <section class="page-head">
 	<h1>{{ _('Settings') }}</h1>
-	<p class="muted">{{ _('Configure how the hub behaves when a card assignment is deleted, and how deep it looks into subfolders for recursive play modes.') }}</p>
+	<p class="muted">{{ _('Configure how the hub behaves when a card assignment is deleted, how deep it looks into subfolders for recursive play modes, and which devices a new assignment is pre-selected for.') }}</p>
 </section>
 
 <form class="form-card" method="post">
@@ -34,6 +34,26 @@
 		<input type="number" id="recursion_depth" name="recursion_depth" min="0" max="20" style="width: 100px"
 			value="{{ settings.recursion_depth }}">
 		<p class="muted">{{ _('How many subfolder levels "Use folder" descends into for recursive play modes (Audiobook recursive, All tracks recursive). Non-recursive play modes always use just the folder itself, regardless of this setting.') }}</p>
+	</div>
+
+	<div class="form-row">
+		<span class="form-label">{{ _('Pre-selected devices when assigning') }}</span>
+		<div class="radio-group radio-group-stacked">
+			<label class="radio-option">
+				<input type="radio" name="default_assign_scope" value="reporting" {{ "checked" if settings.default_assign_scope != "all" }}>
+				<span>
+					<strong>{{ _('Only the device being edited') }}</strong> —
+					{{ _('an assignment covers that one ESPuino. You tick additional devices in the form yourself whenever you want them.') }}
+				</span>
+			</label>
+			<label class="radio-option">
+				<input type="radio" name="default_assign_scope" value="all" {{ "checked" if settings.default_assign_scope == "all" }}>
+				<span>
+					<strong>{{ _('All known ESPuinos') }}</strong> —
+					{{ _('every device is pre-ticked in the assignment form, so a single save covers the whole household. Useful if your cards are meant to work on every box; untick the ones you want to leave out.') }}
+				</span>
+			</label>
+		</div>
 	</div>
 
 	<div class="form-actions">

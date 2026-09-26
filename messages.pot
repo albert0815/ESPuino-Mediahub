@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-15 16:38+0200\n"
+"POT-Creation-Date: 2026-09-26 12:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,23 +17,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:118
+#: app.py:126
 msgid "Incorrect password."
 msgstr ""
 
-#: app.py:140
+#: app.py:148
 #, python-format
 msgid "%(num)s device"
 msgid_plural "%(num)s devices"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:160
+#: app.py:168
 #, python-format
 msgid "Delete ESPuino %(esp_id)s?"
 msgstr ""
 
-#: app.py:162
+#: app.py:170
 #, python-format
 msgid ""
 "There is still %(num)s card assignment for this ESPuino, which must be "
@@ -46,126 +46,131 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:188
+#: app.py:196
 msgid "Alias saved."
 msgstr ""
 
-#: app.py:198
+#: app.py:206
 #, python-format
 msgid ""
 "Device %(esp_id)s and its %(num)s card assignment(s) deleted (locally in "
 "MediaHub only)."
 msgstr ""
 
-#: app.py:200
+#: app.py:208
 #, python-format
 msgid "Device %(esp_id)s deleted."
 msgstr ""
 
-#: app.py:209 templates/card_form.html:29
+#: app.py:217 templates/card_form.html:29
 msgid "Webradio"
 msgstr ""
 
-#: app.py:211
+#: app.py:220
 #, python-format
 msgid "%(num)s file"
 msgid_plural "%(num)s files"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:265
+#: app.py:347
 msgid "Card ID must be exactly 12 digits."
 msgstr ""
 
-#: app.py:269
+#: app.py:351
 msgid "Please choose a known ESPuino."
 msgstr ""
 
-#: app.py:278 app.py:298
+#: app.py:360 app.py:380
 #, python-format
 msgid "Card %(id)s is already assigned on this ESPuino — opening it for editing."
 msgstr ""
 
-#: app.py:292
+#: app.py:374
 msgid "Please choose a different, known ESPuino."
 msgstr ""
 
-#: app.py:312
+#: app.py:394
 #, python-format
 msgid "Card %(id)s duplicated to %(esp_id)s."
 msgstr ""
 
-#: app.py:336
+#: app.py:418
 msgid "A stream URL is required for webradio."
 msgstr ""
 
-#: app.py:345
+#: app.py:427
 msgid "Please choose a valid play mode."
 msgstr ""
 
-#: app.py:364
+#: app.py:446
 #, python-format
 msgid ""
 "Some selected files could not be used (missing, or not readable by the "
 "container's user) and were skipped: %(paths)s"
 msgstr ""
 
-#: app.py:373
+#: app.py:455
 msgid "At least one audio file is required."
 msgstr ""
 
-#: app.py:377
+#: app.py:459
 msgid "This play mode only supports a single file — please select just one."
 msgstr ""
 
-#: app.py:383
+#: app.py:472
 #, python-format
 msgid "Card %(id)s assigned."
 msgstr ""
 
-#: app.py:402
+#: app.py:475
+#, python-format
+msgid "Card %(id)s assigned on %(num)s ESPuinos."
+msgstr ""
+
+#: app.py:497
 #, python-format
 msgid "Force refresh triggered for card %(id)s."
 msgstr ""
 
-#: app.py:409
+#: app.py:504
 #, python-format
 msgid "Force refresh triggered for all %(num)s cards."
 msgstr ""
 
-#: app.py:428
+#: app.py:523
 #, python-format
 msgid ""
 "Secure delete: ESPuino (%(esp_id)s) did not confirm the deletion. Card "
 "was kept, please retry."
 msgstr ""
 
-#: app.py:441
+#: app.py:536
 #, python-format
 msgid "Card %(id)s deleted (%(mode)s)."
 msgstr ""
 
-#: app.py:513
+#: app.py:617
 msgid "Recursion depth must be between 0 and 20."
 msgstr ""
 
-#: app.py:516
+#: app.py:620
 msgid "Settings saved."
 msgstr ""
 
-#: app.py:526
+#: app.py:630
 msgid "Please enter a password."
 msgstr ""
 
-#: app.py:528
+#: app.py:632
 msgid "Passwords do not match."
 msgstr ""
 
-#: app.py:531
+#: app.py:635
 msgid "Hub password set."
 msgstr ""
 
-#: app.py:539
+#: app.py:643
 msgid "Hub password removed."
 msgstr ""
 
@@ -251,7 +256,15 @@ msgstr ""
 msgid "Log out"
 msgstr ""
 
-#: templates/base.html:53
+#: templates/base.html:54
+msgid "New cards have arrived in the meantime."
+msgstr ""
+
+#: templates/base.html:55
+msgid "Refresh now"
+msgstr ""
+
+#: templates/base.html:62
 msgid "MediaHub · a local media hub for ESPuino"
 msgstr ""
 
@@ -346,12 +359,32 @@ msgstr ""
 msgid "Stream URL"
 msgstr ""
 
-#: templates/card_form.html:82 templates/devices.html:35
-#: templates/settings.html:40
+#: templates/card_form.html:83
+msgid "Write to these ESPuinos"
+msgstr ""
+
+#: templates/card_form.html:84
+msgid ""
+"Every ticked device gets its own independent assignment with the same "
+"content, so each one keeps its own play position and cache. Unticking "
+"never deletes anything — an existing assignment is removed with Delete in"
+" the card list."
+msgstr ""
+
+#: templates/card_form.html:89
+msgid "(the one you are editing)"
+msgstr ""
+
+#: templates/card_form.html:95
+msgid "(already has this card)"
+msgstr ""
+
+#: templates/card_form.html:103 templates/devices.html:35
+#: templates/settings.html:60
 msgid "Save"
 msgstr ""
 
-#: templates/card_form.html:83 templates/cards.html:147
+#: templates/card_form.html:104 templates/cards.html:147
 msgid "Cancel"
 msgstr ""
 
@@ -621,8 +654,9 @@ msgstr ""
 
 #: templates/settings.html:8
 msgid ""
-"Configure how the hub behaves when a card assignment is deleted, and how "
-"deep it looks into subfolders for recursive play modes."
+"Configure how the hub behaves when a card assignment is deleted, how deep"
+" it looks into subfolders for recursive play modes, and which devices a "
+"new assignment is pre-selected for."
 msgstr ""
 
 #: templates/settings.html:13
@@ -662,29 +696,54 @@ msgid ""
 "modes always use just the folder itself, regardless of this setting."
 msgstr ""
 
+#: templates/settings.html:40
+msgid "Pre-selected devices when assigning"
+msgstr ""
+
 #: templates/settings.html:45
-msgid "Hub password"
+msgid "Only the device being edited"
 msgstr ""
 
 #: templates/settings.html:46
+msgid ""
+"an assignment covers that one ESPuino. You tick additional devices in the"
+" form yourself whenever you want them."
+msgstr ""
+
+#: templates/settings.html:52
+msgid "All known ESPuinos"
+msgstr ""
+
+#: templates/settings.html:53
+msgid ""
+"every device is pre-ticked in the assignment form, so a single save "
+"covers the whole household. Useful if your cards are meant to work on "
+"every box; untick the ones you want to leave out."
+msgstr ""
+
+#: templates/settings.html:65
+msgid "Hub password"
+msgstr ""
+
+#: templates/settings.html:66
 msgid ""
 "Optional — protects the web UI below. The ESPuino-facing API stays "
 "reachable either way, since devices can't log in."
 msgstr ""
 
-#: templates/settings.html:51
+#: templates/settings.html:71
 msgid "New password"
 msgstr ""
 
-#: templates/settings.html:55
+#: templates/settings.html:75
 msgid "Confirm new password"
 msgstr ""
 
-#: templates/settings.html:59
+#: templates/settings.html:79
 msgid "Set password"
 msgstr ""
 
-#: templates/settings.html:61
+#: templates/settings.html:81
 msgid "Remove password"
 msgstr ""
 

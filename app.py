@@ -241,6 +241,75 @@ def _content_detail(card):
     return ", ".join(f["path"] for f in files)
 
 
+def _assignment_targets(esp_id):
+    """The devices one save writes to: the card being edited, plus every
+    other ESPuino ticked in the form. Unticking a box never deletes an
+    existing assignment — that stays the explicit Delete button in the card
+    list, because a delete can call DELETE /rfid on the device (secure
+    delete) and that is no business of a Save button."""
+    known = store.list_devices()
+    targets = [esp_id]
+    for target_esp_id in request.form.getlist("target_esp_ids"):
+        if target_esp_id != esp_id and target_esp_id in known:
+            targets.append(target_esp_id)
+    return targets
+
+
+def _assignment_target_choices(esp_id, card_id):
+    """The other known ESPuinos offered as additional targets, each with the
+    label to show and whether it already carries this card. Already-assigned
+    ones are pre-ticked so an edit doesn't silently let sibling assignments
+    drift apart; everything else follows the default_assign_scope setting."""
+    scope = store.get_settings().get("default_assign_scope", "reporting")
+    choices = []
+    for other_esp_id, dev in store.list_devices().items():
+        if other_esp_id == esp_id:
+            continue
+        other = store.get_card(other_esp_id, card_id)
+        assigned = other is not None and other["status"] == "assigned"
+        choices.append(
+            {
+                "esp_id": other_esp_id,
+                "label": dev.get("alias") or other_esp_id,
+                "assigned": assigned,
+                "checked": assigned or scope == "all",
+            }
+        )
+    choices.sort(key=lambda choice: choice["label"].lower())
+    return choices
+
+
+def _cards_revision():
+    """Short fingerprint of everything the card list and the dashboard's
+    "new cards" badge show: how many cards exist, how many are still
+    pending, and the newest tap/change timestamp."""
+    cards_by_key = store.list_cards()
+    pending = sum(1 for c in cards_by_key.values() if c["status"] == "pending")
+    last_seen = max((c.get("last_seen") or "" for c in cards_by_key.values()), default="")
+    updated = max((c.get("updated_at") or "" for c in cards_by_key.values()), default="")
+    return f"{len(cards_by_key)}:{pending}:{last_seen}:{updated}"
+
+
+@app.route("/cards/state")
+def cards_state():
+    """Lets an open admin page notice a card that was just tapped without
+    the admin reloading. Deliberately polled by the browser instead of
+    pushed from here: gunicorn runs two sync workers (see Dockerfile), so a
+    held-open SSE stream would occupy one of them for as long as its tab
+    stays open — two tabs and the ESPuino-facing API starves. A poll is an
+    ordinary short request and gives its worker straight back."""
+    return jsonify(revision=_cards_revision())
+
+
+@app.context_processor
+def _inject_live_cards():
+    """Only the pages showing card counts get a revision, which is what
+    switches on the auto-refresh markup in base.html."""
+    if request.endpoint in ("index", "cards"):
+        return {"live_cards_revision": _cards_revision()}
+    return {}
+
+
 @app.route("/cards")
 def cards():
     only_pending = request.args.get("pending") == "1"
@@ -348,7 +417,7 @@ def assign_card(esp_id, card_id):
             if not stream_url:
                 flash(_("A stream URL is required for webradio."), "error")
                 return redirect(url_for("assign_card", esp_id=esp_id, card_id=card_id))
-            store.save_assignment(esp_id, card_id, name, "webradio", None, stream_url, [])
+            payload = (name, "webradio", None, stream_url, [])
         else:
             try:
                 play_mode = int(request.form.get("play_mode", ""))
@@ -391,9 +460,21 @@ def assign_card(esp_id, card_id):
                 return redirect(url_for("assign_card", esp_id=esp_id, card_id=card_id))
 
             files.sort(key=lambda f: f["path"])
-            store.save_assignment(esp_id, card_id, name, "files", play_mode, None, files)
+            payload = (name, "files", play_mode, None, files)
 
-        flash(_("Card %(id)s assigned.", id=card_id), "success")
+        # Same content, one independent assignment per device — the ESPuinos
+        # keep their own play positions and caches.
+        targets = _assignment_targets(esp_id)
+        for target_esp_id in targets:
+            store.save_assignment(target_esp_id, card_id, *payload)
+
+        if len(targets) == 1:
+            flash(_("Card %(id)s assigned.", id=card_id), "success")
+        else:
+            flash(
+                _("Card %(id)s assigned on %(num)s ESPuinos.", id=card_id, num=len(targets)),
+                "success",
+            )
         return redirect(url_for("cards"))
 
     return render_template(
@@ -402,6 +483,7 @@ def assign_card(esp_id, card_id):
         card_id=card_id,
         card=card,
         device=store.list_devices().get(esp_id),
+        target_choices=_assignment_target_choices(esp_id, card_id),
         play_modes=manifest_lib.FILE_PLAY_MODES,
         single_file_play_modes=list(manifest_lib.SINGLE_FILE_PLAY_MODES),
         recursive_play_modes=list(manifest_lib.RECURSIVE_PLAY_MODES),
@@ -520,6 +602,10 @@ def settings():
         mode = request.form.get("delete_mode")
         if mode in ("lazy", "secure"):
             store.set_delete_mode(mode)
+
+        scope = request.form.get("default_assign_scope")
+        if scope in ("reporting", "all"):
+            store.set_default_assign_scope(scope)
 
         try:
             depth = int(request.form.get("recursion_depth", ""))

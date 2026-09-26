@@ -78,6 +78,27 @@
 		</div>
 	</div>
 
+	{% if target_choices %}
+	<div class="form-row">
+		<span class="form-label">{{ _('Write to these ESPuinos') }}</span>
+		<p class="muted">{{ _('Every ticked device gets its own independent assignment with the same content, so each one keeps its own play position and cache. Unticking never deletes anything — an existing assignment is removed with Delete in the card list.') }}</p>
+		<div class="checkbox-group">
+			<label class="checkbox-option">
+				<input type="checkbox" checked disabled>
+				<span>{{ device.alias if device and device.alias else esp_id }}
+					<span class="muted">{{ _('(the one you are editing)') }}</span></span>
+			</label>
+			{% for choice in target_choices %}
+			<label class="checkbox-option">
+				<input type="checkbox" name="target_esp_ids" value="{{ choice.esp_id }}" {{ "checked" if choice.checked }}>
+				<span>{{ choice.label }}{% if choice.assigned %}
+					<span class="muted">{{ _('(already has this card)') }}</span>{% endif %}</span>
+			</label>
+			{% endfor %}
+		</div>
+	</div>
+	{% endif %}
+
 	<div class="form-actions">
 		<button class="btn" type="submit">{{ _('Save') }}</button>
 		<a class="btn btn-secondary" href="{{ url_for('cards') }}">{{ _('Cancel') }}</a>
