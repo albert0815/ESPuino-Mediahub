@@ -89,7 +89,12 @@ The `.mo` files are compiled automatically at Docker build time (see Dockerfile)
 Functional hub with device/card management, per-card manifests
 (`version` = SHA-256, including the force-refresh lever), a library file/folder
 browser for assignment (no uploads — files stay in place under `./media`),
-`pending` registration, lazy/secure delete, and an optional web UI password.
-Open (see `../mediahub-konzept.md` §15): the ESPuino-side implementation
-(`MEDIAHUB` play mode, `MediaHub_EnsureCard`, LED download animation) is a
-separate firmware topic not yet started.
+`pending` registration, lazy/secure delete, assignments that cover several
+ESPuinos in one save, a self-refreshing card list, and an optional web UI
+password.
+
+The ESPuino side is implemented and shipped with the firmware since version
+3.1: `MEDIAHUB` play mode, `MediaHub_HandleCardTapped()` in `src/MediaHub.cpp`,
+manifest download with LED progress, and — optionally — adoption of unknown
+cards straight from a hub, without teaching them on the device first. The
+user-facing side is documented in chapters 8 and 11 of the ESPuino handbook.
