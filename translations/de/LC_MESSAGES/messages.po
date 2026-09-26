@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ESPuino MediaHub\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-15 16:38+0200\n"
+"POT-Creation-Date: 2026-09-26 12:52+0200\n"
 "PO-Revision-Date: 2026-07-15 09:43+0200\n"
 "Last-Translator: ESPuino MediaHub\n"
 "Language: de\n"
@@ -17,23 +17,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:118
+#: app.py:126
 msgid "Incorrect password."
 msgstr "Falsches Passwort."
 
-#: app.py:140
+#: app.py:148
 #, python-format
 msgid "%(num)s device"
 msgid_plural "%(num)s devices"
 msgstr[0] "%(num)s Gerät"
 msgstr[1] "%(num)s Geräte"
 
-#: app.py:160
+#: app.py:168
 #, python-format
 msgid "Delete ESPuino %(esp_id)s?"
 msgstr "ESPuino %(esp_id)s löschen?"
 
-#: app.py:162
+#: app.py:170
 #, python-format
 msgid ""
 "There is still %(num)s card assignment for this ESPuino, which must be "
@@ -52,11 +52,11 @@ msgstr[1] ""
 "zuerst gelöscht werden müssen. Sollen sie automatisch gelöscht werden? "
 "Hinweis: Die Karten werden nur lokal im MediaHub gelöscht."
 
-#: app.py:188
+#: app.py:196
 msgid "Alias saved."
 msgstr "Alias gespeichert."
 
-#: app.py:198
+#: app.py:206
 #, python-format
 msgid ""
 "Device %(esp_id)s and its %(num)s card assignment(s) deleted (locally in "
@@ -65,55 +65,55 @@ msgstr ""
 "Gerät %(esp_id)s und seine %(num)s Kartenzuweisung(en) gelöscht (nur "
 "lokal im MediaHub)."
 
-#: app.py:200
+#: app.py:208
 #, python-format
 msgid "Device %(esp_id)s deleted."
 msgstr "Gerät %(esp_id)s gelöscht."
 
-#: app.py:209 templates/card_form.html:29
+#: app.py:217 templates/card_form.html:29
 msgid "Webradio"
 msgstr "Webradio"
 
-#: app.py:211
+#: app.py:220
 #, python-format
 msgid "%(num)s file"
 msgid_plural "%(num)s files"
 msgstr[0] "%(num)s Datei"
 msgstr[1] "%(num)s Dateien"
 
-#: app.py:265
+#: app.py:316
 msgid "Card ID must be exactly 12 digits."
 msgstr "Die Karten-ID muss genau 12 Ziffern haben."
 
-#: app.py:269
+#: app.py:320
 msgid "Please choose a known ESPuino."
 msgstr "Bitte einen bekannten ESPuino wählen."
 
-#: app.py:278 app.py:298
+#: app.py:329 app.py:349
 #, python-format
 msgid "Card %(id)s is already assigned on this ESPuino — opening it for editing."
 msgstr ""
 "Karte %(id)s ist auf diesem ESPuino bereits zugewiesen — wird zum "
 "Bearbeiten geöffnet."
 
-#: app.py:292
+#: app.py:343
 msgid "Please choose a different, known ESPuino."
 msgstr "Bitte einen anderen, bekannten ESPuino wählen."
 
-#: app.py:312
+#: app.py:363
 #, python-format
 msgid "Card %(id)s duplicated to %(esp_id)s."
 msgstr "Karte %(id)s dupliziert auf %(esp_id)s."
 
-#: app.py:336
+#: app.py:387
 msgid "A stream URL is required for webradio."
 msgstr "Für Webradio wird eine Stream-URL benötigt."
 
-#: app.py:345
+#: app.py:396
 msgid "Please choose a valid play mode."
 msgstr "Bitte einen gültigen Abspielmodus wählen."
 
-#: app.py:364
+#: app.py:415
 #, python-format
 msgid ""
 "Some selected files could not be used (missing, or not readable by the "
@@ -122,32 +122,37 @@ msgstr ""
 "Einige ausgewählte Dateien konnten nicht verwendet werden (fehlen oder "
 "vom Container-Nutzer nicht lesbar) und wurden übersprungen: %(paths)s"
 
-#: app.py:373
+#: app.py:424
 msgid "At least one audio file is required."
 msgstr "Mindestens eine Audiodatei wird benötigt."
 
-#: app.py:377
+#: app.py:428
 msgid "This play mode only supports a single file — please select just one."
 msgstr ""
 "Dieser Abspielmodus unterstützt nur eine einzelne Datei — bitte nur eine "
 "auswählen."
 
-#: app.py:383
+#: app.py:441
 #, python-format
 msgid "Card %(id)s assigned."
 msgstr "Karte %(id)s zugewiesen."
 
-#: app.py:402
+#: app.py:444
+#, python-format
+msgid "Card %(id)s assigned on %(num)s ESPuinos."
+msgstr "Karte %(id)s auf %(num)s ESPuinos zugewiesen."
+
+#: app.py:466
 #, python-format
 msgid "Force refresh triggered for card %(id)s."
 msgstr "Force Refresh für Karte %(id)s ausgelöst."
 
-#: app.py:409
+#: app.py:473
 #, python-format
 msgid "Force refresh triggered for all %(num)s cards."
 msgstr "Force Refresh für alle %(num)s Karten ausgelöst."
 
-#: app.py:428
+#: app.py:492
 #, python-format
 msgid ""
 "Secure delete: ESPuino (%(esp_id)s) did not confirm the deletion. Card "
@@ -156,32 +161,32 @@ msgstr ""
 "Secure Delete: Der ESPuino (%(esp_id)s) hat das Löschen nicht bestätigt. "
 "Die Karte wurde beibehalten, bitte erneut versuchen."
 
-#: app.py:441
+#: app.py:505
 #, python-format
 msgid "Card %(id)s deleted (%(mode)s)."
 msgstr "Karte %(id)s gelöscht (%(mode)s)."
 
-#: app.py:513
+#: app.py:586
 msgid "Recursion depth must be between 0 and 20."
 msgstr "Die Rekursionstiefe muss zwischen 0 und 20 liegen."
 
-#: app.py:516
+#: app.py:589
 msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 
-#: app.py:526
+#: app.py:599
 msgid "Please enter a password."
 msgstr "Bitte ein Passwort eingeben."
 
-#: app.py:528
+#: app.py:601
 msgid "Passwords do not match."
 msgstr "Die Passwörter stimmen nicht überein."
 
-#: app.py:531
+#: app.py:604
 msgid "Hub password set."
 msgstr "Hub-Passwort gesetzt."
 
-#: app.py:539
+#: app.py:612
 msgid "Hub password removed."
 msgstr "Hub-Passwort entfernt."
 
@@ -370,12 +375,36 @@ msgstr ""
 msgid "Stream URL"
 msgstr "Stream-URL"
 
-#: templates/card_form.html:82 templates/devices.html:35
-#: templates/settings.html:40
+#: templates/card_form.html:83
+msgid "Write to these ESPuinos"
+msgstr "Auf diese ESPuinos schreiben"
+
+#: templates/card_form.html:84
+msgid ""
+"Every ticked device gets its own independent assignment with the same "
+"content, so each one keeps its own play position and cache. Unticking "
+"never deletes anything — an existing assignment is removed with Delete in"
+" the card list."
+msgstr ""
+"Jedes angehakte Gerät erhält seine eigene, unabhängige Zuweisung mit "
+"demselben Inhalt und behält damit seine eigene Abspielposition und seinen"
+" eigenen Cache. Ein Abwählen löscht nie etwas — eine vorhandene Zuweisung"
+" entfernst du mit „Löschen“ in der Kartenliste."
+
+#: templates/card_form.html:89
+msgid "(the one you are editing)"
+msgstr "(das Gerät, das du bearbeitest)"
+
+#: templates/card_form.html:95
+msgid "(already has this card)"
+msgstr "(hat diese Karte bereits)"
+
+#: templates/card_form.html:103 templates/devices.html:35
+#: templates/settings.html:60
 msgid "Save"
 msgstr "Speichern"
 
-#: templates/card_form.html:83 templates/cards.html:147
+#: templates/card_form.html:104 templates/cards.html:147
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -660,11 +689,13 @@ msgstr "Verwalten"
 
 #: templates/settings.html:8
 msgid ""
-"Configure how the hub behaves when a card assignment is deleted, and how "
-"deep it looks into subfolders for recursive play modes."
+"Configure how the hub behaves when a card assignment is deleted, how deep"
+" it looks into subfolders for recursive play modes, and which devices a "
+"new assignment is pre-selected for."
 msgstr ""
 "Legt fest, wie sich der Hub beim Löschen einer Kartenzuweisung verhält, "
-"und wie tief er bei rekursiven Abspielmodi in Unterordner schaut."
+"wie tief er für rekursive Abspielmodi in Unterordner schaut und für "
+"welche Geräte eine neue Zuweisung vorausgewählt ist."
 
 #: templates/settings.html:13
 msgid "Delete behavior"
@@ -714,11 +745,42 @@ msgstr ""
 "rekursive Modi nutzen unabhängig von dieser Einstellung immer nur den "
 "Ordner selbst."
 
+#: templates/settings.html:40
+msgid "Pre-selected devices when assigning"
+msgstr "Vorauswahl der Geräte beim Zuweisen"
+
 #: templates/settings.html:45
+msgid "Only the device being edited"
+msgstr "Nur das bearbeitete Gerät"
+
+#: templates/settings.html:46
+msgid ""
+"an assignment covers that one ESPuino. You tick additional devices in the"
+" form yourself whenever you want them."
+msgstr ""
+"eine Zuweisung gilt für diesen einen ESPuino. Weitere Geräte hakst du im "
+"Formular selbst an, wenn du sie brauchst."
+
+#: templates/settings.html:52
+msgid "All known ESPuinos"
+msgstr "Alle bekannten ESPuinos"
+
+#: templates/settings.html:53
+msgid ""
+"every device is pre-ticked in the assignment form, so a single save "
+"covers the whole household. Useful if your cards are meant to work on "
+"every box; untick the ones you want to leave out."
+msgstr ""
+"im Zuweisungsformular sind alle Geräte vorausgewählt, ein einziges "
+"Speichern versorgt also den ganzen Haushalt. Praktisch, wenn deine Karten"
+" ohnehin auf jedem Gerät funktionieren sollen; einzelne Geräte hakst du "
+"bei Bedarf ab."
+
+#: templates/settings.html:65
 msgid "Hub password"
 msgstr "Hub-Passwort"
 
-#: templates/settings.html:46
+#: templates/settings.html:66
 msgid ""
 "Optional — protects the web UI below. The ESPuino-facing API stays "
 "reachable either way, since devices can't log in."
@@ -727,19 +789,19 @@ msgstr ""
 "API bleibt in jedem Fall erreichbar, da sich Geräte nicht anmelden "
 "können."
 
-#: templates/settings.html:51
+#: templates/settings.html:71
 msgid "New password"
 msgstr "Neues Passwort"
 
-#: templates/settings.html:55
+#: templates/settings.html:75
 msgid "Confirm new password"
 msgstr "Neues Passwort bestätigen"
 
-#: templates/settings.html:59
+#: templates/settings.html:79
 msgid "Set password"
 msgstr "Passwort setzen"
 
-#: templates/settings.html:61
+#: templates/settings.html:81
 msgid "Remove password"
 msgstr "Passwort entfernen"
 

@@ -570,6 +570,12 @@ input[type="file"]:focus,
 	margin-top: 3px;
 }
 
+.checkbox-group {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
 .form-section {
 	display: flex;
 	flex-direction: column;
