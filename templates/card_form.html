@@ -83,6 +83,20 @@
 	</div>
 
 	<div id="mh-podcast-section" class="form-section">
+		<div class="form-row">
+			<span class="form-label">{{ _('Source') }}</span>
+			<div class="radio-group">
+				<label class="radio-option">
+					<input type="radio" name="podcast_source" value="rss" id="podcast-source-rss">
+					{{ _('Podcast feed (RSS)') }}
+				</label>
+				<label class="radio-option">
+					<input type="radio" name="podcast_source" value="ard" id="podcast-source-ard">
+					{{ _('ARD Sounds') }}
+				</label>
+			</div>
+		</div>
+
 		<div class="form-row" id="podcast-rss-row">
 			<label for="podcast-feed-url">{{ _('Feed URL') }}</label>
 			<div class="podcast-search">
@@ -93,6 +107,19 @@
 				{{ _('Any podcast feed works — the address a podcast app would subscribe to. MediaHub downloads the chosen episodes itself, so the ESPuino plays them from its SD card like any other assignment — offline included.') }}
 			</p>
 			<div id="podcast-feed-status" class="podcast-box" hidden></div>
+		</div>
+
+		<div class="form-row" id="podcast-ard-row" hidden>
+			<label for="podcast-query">{{ _('Search ARD Sounds') }}</label>
+			<div class="podcast-search">
+				<input type="search" id="podcast-query" placeholder="{{ _('Show name — or paste a link to the show') }}"
+					autocomplete="off">
+				<button class="btn btn-secondary" type="button" id="podcast-search-btn">{{ _('Search') }}</button>
+			</div>
+			<p class="muted">
+				{{ _('Podcasts and radio shows from ARD Sounds (formerly ARD Audiothek) — searchable here instead of having to find their feed address first.') }}
+			</p>
+			<div id="podcast-results" class="podcast-box" hidden></div>
 		</div>
 
 		<div class="form-row" id="podcast-show-row" hidden>
@@ -107,7 +134,7 @@
 					<input type="radio" name="podcast_selection" value="latest" id="podcast-selection-latest">
 					<span>
 						<strong>{{ _('Always the newest') }}</strong> —
-						{{ _('the hub re-checks the feed and fetches new episodes on its own; the card plays the new one from the next tap onwards.') }}
+						{{ _('the hub re-checks the podcast and fetches new episodes on its own; the card plays the new one from the next tap onwards.') }}
 					</span>
 				</label>
 				<div class="podcast-count" id="podcast-count-row">
@@ -141,6 +168,9 @@
 		<script type="application/json" id="podcast-config">
 			{{ {
 				"feedUrl": url_for('podcast_feed_preview'),
+				"searchUrl": url_for('podcast_search'),
+				"episodesUrlTemplate": url_for('podcast_episodes', show_id='SHOW_ID'),
+				"sources": podcast_sources,
 				"maxEpisodes": max_podcast_episodes,
 				"singleFileModes": single_file_play_modes,
 				"initial": (card.podcast if card.kind == "podcast" else None),
@@ -148,11 +178,17 @@
 					"episodeCount": _('%(num)s episodes', num='{num}'),
 					"latestEpisode": _('latest episode: %(date)s', date='{date}'),
 					"change": _('Choose a different podcast'),
-					"noEpisodes": _('This feed currently has no playable episodes.'),
-					"previewNote": _('The feed as it is right now — when a new episode appears, the list moves up. Click one to play just that episode instead.'),
+					"noEpisodes": _('This podcast currently has no playable episodes.'),
+					"previewNote": _('The podcast as it is right now — when a new episode appears, the list moves up. Click one to play just that episode instead.'),
 					"pickNote": _('Pick the episodes this card plays.'),
 					"loadingFeed": _('Loading feed…'),
 					"feedFailed": _('Could not read this feed.'),
+					"searching": _('Searching ARD Sounds…'),
+					"noResults": _('No show found. Try a different search term.'),
+					"searchFailed": _('Could not reach ARD Sounds.'),
+					"select": _('Select'),
+					"loadingEpisodes": _('Loading episodes…'),
+					"loadMore": _('Load more episodes'),
 					"singleEpisodeOnly": _('This play mode only supports a single episode.'),
 					"newest": _('newest')
 				}

@@ -764,7 +764,7 @@ input[type="file"]:focus,
 	flex-wrap: wrap;
 }
 
-.podcast-search input[type="url"] {
+.podcast-search input[type="url"], .podcast-search input[type="search"] {
 	flex: 1;
 	min-width: 220px;
 }
@@ -781,7 +781,7 @@ input[type="file"]:focus,
 	gap: 6px;
 }
 
-.podcast-show {
+.podcast-result, .podcast-show {
 	display: flex;
 	align-items: center;
 	gap: 12px;
@@ -789,6 +789,10 @@ input[type="file"]:focus,
 	border: 1px solid var(--border);
 	border-radius: 8px;
 	background: var(--surface);
+}
+
+.podcast-show {
+	background: var(--bg);
 }
 
 .podcast-cover {
@@ -811,6 +815,15 @@ input[type="file"]:focus,
 .podcast-meta {
 	font-size: .8rem;
 	color: var(--muted);
+}
+
+.podcast-synopsis {
+	font-size: .82rem;
+	color: var(--muted);
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 
 .podcast-msg {
@@ -901,6 +914,11 @@ button.podcast-episode {
 .podcast-episode-title {
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+.podcast-load-more {
+	align-self: flex-start;
+	margin: 4px 8px 2px;
 }
 
 /* --- Podcast sync state (card list) --- */
